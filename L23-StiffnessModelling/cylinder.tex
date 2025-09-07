@@ -1,0 +1,39 @@
+\documentclass[tikz,border=3mm]{standalone}
+    \usepackage{tikz-3dplot}
+    \tikzset{declare function={
+        vcrity(\ph,\th)=atan2(sin(\th)*sin(\ph),min(cos(\ph),-1/sqrt(2))*cos(\th));% critical t value y cylinder
+        vcritz(\ph,\th)=\ph;% critical t value y cylinder
+        },pics/ycylinder/.style={code={
+        \tikzset{3d/cylinder/.cd,#1}
+        \def\pv##1{\pgfkeysvalueof{/tikz/3d/cylinder/##1}}
+        \pgfmathsetmacro{\vmin}{vcrity(\tdplotmainphi,\tdplotmaintheta)}
+        \pgfmathsetmacro{\vmax}{\vmin-180}
+        \path[3d/cylinder/mantle]
+          let \p1=($(0,1,0)-(0,0,0)$),\n1={atan2(\y1,\x1)} in
+          [shading angle=\n1]
+          plot[variable=\t,domain=\vmin:\vmax,smooth]
+		({\pv{r}*cos(\t)},0,{\pv{r}*sin(\t)})
+		-- 
+		plot[variable=\t,domain=\vmax:\vmin,smooth]
+		({\pv{r}*cos(\t)},\pv{h},{\pv{r}*sin(\t)})
+		--cycle;
+	\pgfmathtruncatemacro{\itest}{sign(cos(\tdplotmainphi))}
+	\ifnum\itest=-1
+		\path[3d/cylinder/top] plot[variable=\t,domain=0:360,smooth cycle]
+		({\pv{r}*cos(\t)},\pv{h},{\pv{r}*sin(\t)}) ;
+	\fi
+	\ifnum\itest=1
+		\path[3d/cylinder/top] plot[variable=\t,domain=0:360,smooth cycle]
+		({\pv{r}*cos(\t)},0,{\pv{r}*sin(\t)}) ;
+	\fi
+	}},3d/.cd,cylinder/.cd,r/.initial=1,h/.initial=1,
+	mantle/.style={draw},top/.style={draw}}
+    \begin{document}
+%	\foreach \X in {0}
+%		{\tdplotsetmaincoords{69}{\X}
+		\begin{tikzpicture}%[tdplot_main_coords]
+			%\path[tdplot_screen_coords,use as bounding box] (-4,-2.5) rectangle (4,2.5);
+			%\path[tdplot_screen_coords,use as bounding box] (-4,-2.5) rectangle (4,2.5);
+			\path pic{ycylinder={r=1,h=3,top/.append style={fill=gray}}};
+		\end{tikzpicture}}
+\end{document}

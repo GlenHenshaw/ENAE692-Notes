@@ -1,0 +1,71 @@
+\documentclass[]{article}
+
+\usepackage{tikz}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{relsize}
+\usepackage{tkz-base}
+\usepackage{tkz-euclide}
+
+\usetikzlibrary{svg.path}
+\usetikzlibrary{arrows}
+\usetikzlibrary{shapes.geometric,calc}
+
+\tikzset{
+      ncbar/.style={
+        to path=%
+        ($(\tikztostart)!#1!90:(\tikztotarget)$)
+        -- ($(\tikztotarget)!($(\tikztostart)!#1!90:(\tikztotarget)$)!90:(\tikztostart)$)
+      },
+      ncbar/.default=0.5cm,
+    }
+    
+\newcommand{\crossout}[1]{\mathbin{\ooalign{${#1}$\cr\larger[1]{$\nearrow$}\cr}}}
+
+%opening
+\title{Example Problem}
+\author{Glen Henshaw\\Craig Carignan}
+
+
+
+\begin{document}
+
+\maketitle
+
+\section{Problem}
+
+One very common way to use redundant degrees of freedom is to try to keep the manipulator's joints in the middle of their range of motion, so that it's less likely to hit a joint limit. Suppose we wanted to derive a pseudoinverse to make a manipulator with $f>6$ degrees of freedom do this.
+
+We'll define an auxiliary loss term that penalizes angular distance from the center of the robot's range of motion:
+\begin{eqnarray}
+D & = & \sum_{i=1}^{n} \left( \frac{n_{i}-n_{i}^{\mathrm{mid}}}{n_{i}^{\mathrm{min}}-n_{i}^{\mathrm{max}}}\right)^{2} \\
+n^{\mathrm{mid}} & \triangleq & \frac{1}{2}\left( n_{i}^{\mathrm{min}} + n_{i}^{\mathrm{max}} \right)
+\end{eqnarray}
+where $n_{i}^{\mathrm{min}}$ and $n_{i}^{\mathrm{max}}$ are the minimum and maximum joint angles for joint $i$.
+ 
+ We want to use Resolved Motion Rate Control (RMRC) with a ``custom'' pseudoinverse that uses the extra degrees of freedom to minimize this loss term. What is the RMRC Jacobian relationship for this term --- in other words, what is $\Delta \underline{n}$ with respect to $\Delta\underline{x}$?
+
+
+\section{Answer}
+Recall that we derived a general formula to do this in Lecture 12 (specifically, equation 6):
+\begin{displaymath}
+\Delta\underline{n} = J^{\dag}\Delta\underline{x} + \left[ J^{\dag}J-I\right] \frac{\partial D}{\partial \Delta\underline{n}}^{T}\Delta t
+\end{displaymath}
+So all we have to do is take the partial of $D$ with respect to each of the joint angles $n_{i}$:
+\begin{displaymath}
+	\frac{\partial D}{\partial \Delta\underline{n}} = 2\left[
+		\begin{matrix}
+			\frac{n_{0} - n_{0}^{\mathrm{mid}}}{n_{0}^{\mathrm{min}} - n_{0}^{\mathrm{max}}} & 0 & \dots & 0 \\
+			0 & \frac{n_{1} - n_{1}^{\mathrm{mid}}}{n_{1}^{\mathrm{min}} - n_{1}^{\mathrm{max}}} & \dots & 0 \\
+			\vdots & \vdots & \ddots & \vdots \\
+			0 & 0 & \cdots & \frac{n_{f} - n_{f}^{\mathrm{mid}}}{n_{f}^{\mathrm{min}} - n_{f}^{\mathrm{max}}}
+		\end{matrix} \right] \triangleq G
+\end{displaymath}
+Noting that is diagonal, $D=D^{T}$, and therefore the full RMRC algorithm is:
+\begin{displaymath}
+\Delta\underline{n} = J^{\dag}\Delta\underline{x} + \left[ J^{\dag}J-I\right]G\ \Delta t
+\end{displaymath}
+
+Citation: Hanai, Aaron, Doctoral dissertation, ``A Unified Autonomus Underwater Vehicle--Manipulator System'', University of Hawai`i--Manoa, 2010, pg. 12
+\end{document}
