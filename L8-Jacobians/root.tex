@@ -116,30 +116,91 @@ then
 This is the ``direct differentiation'' method. Works okay for arms with few degrees of freedom. Completely intractable for most arms.
 
 Okay, what about rotation?
-\begin{displaymath}
-	\Omega = \dot{R}(\underline{q})R(\underline{q})^{T}
-\end{displaymath}
-where
-\begin{displaymath}
-\Omega \triangleq \left[ \begin{array}{ccc} 0 & -\omega_{z} & \omega_{y} \\
-\omega_{z} & 0 & -\omega_{x} \\ -\omega_{y} & \omega_{x} & 0 \end{array} \right]
-\end{displaymath}
-and
-\begin{displaymath}
-\underline{\omega} = \left[ \begin{array}{c} \omega_{x} \\ \omega_{y} \\ \omega_{x} \end{array} \right].
-\end{displaymath}
-\\
 
+To start, let's think about a vector $^{B}\underline{p}$ that is constant in frame $B$. But let's suppose that frame $B$ is itself rotating with respect to an inertially fixed frame $A$. In other words, the time derivative of the rotation matrix $^{A}_{B}\dot{R} \ne 0$. Then,
+\begin{displaymath}
+	^{A}\dot{\underline{p}} = \ ^{A}_{B}\dot{R}\ ^{B}\underline{p}
+\end{displaymath}
+or
+\begin{displaymath}
+	^{A}\underline{v}_{B} = \ ^{A}_{B}\dot{R}\ ^{B}\underline{p}
+\end{displaymath}
+%\begin{displaymath}
+%	\Omega = \dot{R}(\underline{q})R(\underline{q})^{T}
+%\end{displaymath}
+Substituting for $^{B}\underline{p}$, we can get
+\begin{displaymath}
+^{A}\underline{v}_{B} = \ ^{A}_{B}\dot{R}\ ^{A}_{B}R^{-1}\ ^{A}\underline{p}
+\end{displaymath}
+We know from equation 5.19 from the text that
+\begin{displaymath}
+	S_{\times} = \dot{R}R^{-1}
+\end{displaymath}
+where $S_{\times}$ is a skew-symmetric matrix. So we can write this as
+\begin{displaymath}
+	^{A}\underline{v}_{B} = \ ^{A}_{B}S\ ^{A}\underline{p}
+\end{displaymath}
+and if we define
+\begin{displaymath}
+	\Omega_{\times} \triangleq \left[ 
+	\begin{array}{ccc} 0 & -\omega_{z} & \omega_{y} \\ \omega_{z} & 0 & -\omega_{x} \\ -\omega_{y} & \omega_{x} & 0 \end{array}\right]
+\end{displaymath}
+and we define the 3--vector
+\begin{displaymath}
+	\underline{\omega} \triangleq \left[ \begin{array}{c} \omega_{x} \\ \omega_{y} \\ \omega_{z} \end{array} \right]
+\end{displaymath}
+we can verify that
+\begin{displaymath}
+	\Omega_{\times}\underline{p}= \omega \times \underline{p}
+\end{displaymath}
+so we can write
+\begin{displaymath}
+	^{A}\underline{v}_{B} = \ ^{A}\Omega_{\times,B}\ ^{A}\underline{p}
+\end{displaymath}
+
+
+This means that $\underline{\omega}$ is the angular velocity vector of frame $B$ with respect to frame $A$.
+
+Now,
 \begin{displaymath}
 \dot{R} = \sum_{j=1}^{N} \frac{\partial R(\underline{q})}{\partial q_{j}}\dot{q}_{j}
 \end{displaymath}
-can be rewritten as
+``can be rewritten as''
 \begin{displaymath}
 	\underline{\omega}=J_{rot}\dot{\underline{q}}
 \end{displaymath}
-See Exercise 5.16. and the RPR Wrist Jacobian handout.
+in the following manner:
+\begin{displaymath}
+	\Omega_{\times} = R^{T}(\underline{q})\sum_{j=1}^{N}\frac{\partial R(\underline{q})}{\partial q_{j}}\dot{q}_{j}
+\end{displaymath}
+and we can carry this calculation out for the example above:
+\begin{displaymath}
+	R(\underline{q}) = \left[\begin{array}{ccc} c_{\theta} & s_{\theta} & 0 \\ -s_{\theta} & c_{\theta} & 0 \\ 0 & 0 & 1 \end{array}\right]
+\end{displaymath}
+so
+\begin{displaymath}
+	\dot{R}(\underline{q}) = \left[\begin{array}{ccc} -s_{\theta} & s_{\theta} & 0 \\ -c_{\theta} & -s_{\theta} & 0 \\ 0 & 0 & 0 \end{array}\right]
+\end{displaymath}
+and
+\begin{eqnarray}
+R\sum_{j=1}^{N}\frac{\partial R(\underline{q})}{\partial q_{j}} = \left[ \begin{array}{ccc}  0 & c_{\theta}^{2}-s_{\theta}^{2} & 0 \\ s_{\theta}^{2}-c_{\theta}^{2} & 0 & 0 \\ 0 & 0 & 0 \end{array}\right]
+\end{eqnarray}
+because all of the partials with respect to $r$ are zero. We can then ``pick off'' the terms in the matrix representing each of $\omega_{x}$, $\omega_{y}$, and $\omega_{z}$. In this case, of course, $\omega_{x}=0$ and $\omega_{y}=0$ and we are simply left with
+\begin{displaymath}
+	\omega_{z} = (s_{\theta}^{2}-c_{\theta}^{2})\dot{\theta}
+\end{displaymath}
+so
+\begin{displaymath}
+J_{\text{rot}} = \left[ \begin{array}{cc} 0 & s_{\theta}^{2}-c_{\theta}^{2} \end{array} \right]
+\end{displaymath}
+and the entire Jacobian is generally written as 
+\begin{displaymath}
+J = \left[ \begin{array}{cc} c_{\theta} & -r\ s_{\theta} \\ s_{\theta} & -r\ c_{\theta} \\ 0 & s_{\theta}^{2}-c_{\theta}^{2} \end{array} \right]
+\end{displaymath}
 
-This is the ``Direct Differentiation'' method for the rotation Jacobian, and it is very tedious.
+See Exercise 5.16 and the RPR Wrist Jacobian handout.
+
+This is the ``Direct Differentiation'' method for the rotation Jacobian, and it is in general very tedious.
 
 \subsection{Cross--product method}
 There is an alternative method called the ``cross--product method'' which is more computationally efficient and derives from the velocity propagation method. It's based on the insight that each element of the Jacobian describes the instantaneous motion of the end effector along some direction in terms of the motion of each joint. Graphically:
