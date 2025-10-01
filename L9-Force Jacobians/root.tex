@@ -47,7 +47,7 @@ What $\underline{\tau}$ is required to counteract $\underline{f}$? Since this is
 Some definitions:
 \begin{eqnarray}
 \underline{f}_{i} & \text{force exerted on link i by link i-1} \nonumber\\
-\underline{n}_{i} & \text{torque exerted in link i by link i-1} \nonumber
+\underline{n}_{i} & \text{torque exerted on link i by link i-1} \nonumber
 \end{eqnarray}
 
 \begin{figure}
@@ -102,26 +102,26 @@ In order to recursively calculate the forces and torques exerted on each link, w
 We'd really like to express the forces and torques entirely in their ``own'' frames, so we'll rotate them as such:
 \begin{eqnarray}
 ^{i}f_{i} & = & \ \!^{i}_{i+1}R\ \!^{i+1}f_{i+1} \\
-^{i}n_{i} & = &  \ \!^{i}_{i+1}R\ \!^{i+1}n_{i+1} + \ \!^{i}P_{i+1} \times \ \!^{i}f_{i+1}
+^{i}n_{i} & = &  \ \!^{i}_{i+1}R\ \!^{i+1}n_{i+1} + \ \!^{i}P_{i+1} \times \ \!^{i}f_{i}
 \end{eqnarray}
 NOTE that all forces and moment vectors are absorbed by the structure of the arm except for those exerted about the axis of rotation of the joint. So to balance the force/moment equation, we have to isolate the $z$--component. If the joint is revolute, this is $\tau_{i} = \ \!^{i}n_{i}^{T}\ \!^{i}\hat{Z}_{i}$. If the joint is prismatic, this is $\tau_{i} = \ \!^{i}f_{i}^{T}\ \!^{i}\hat{Z}_{i}$.
 
 \subsection{Virtual Work}
 The concept here is that work can be expressed in terms of either motion of the joints or motion of the end effector, and that these two terms must be equal. Work is the inner product of a vector force or torque with a vector displacement. In the case of our diagram, this is
 \begin{displaymath}
-	\underbrace{\mathcal{F} \cdot \delta\mathcal{X}}_{\substack{\text{Cartesian}\\\text{space}}} = \underbrace{\tau \cdot \delta\Theta}_{\substack{\text{Joint}\\ \text{space}}}
+	\underbrace{\mathcal{F} \cdot \delta\mathcal{X}}_{\substack{\text{Cartesian}\\\text{space}}} = \underbrace{\tau \cdot \delta\\underline(q)}_{\substack{\text{Joint}\\ \text{space}}}
 \end{displaymath}
-where $\mathcal{F}$ is a Cartesian force--moment vector acting on the end effector, $\delta\Theta$ is a infinitesimal Cartesian displacement of the end effector, $\tau$ is the vector of torques at the joints, and $\delta \Theta$ is an infinitesimal vector of joint displacements.
+where $\mathcal{F}$ is a Cartesian force--moment vector acting on the end effector, $\delta\mathcal{X}$ is a infinitesimal Cartesian displacement of the end effector, $\tau$ is the vector of torques (or forces, for prismatic actuators) at the joints, and $\delta \underline{q}$ is an infinitesimal vector of joint displacements.
 
 You can write a dot product as a vector multiplication, so
 \begin{displaymath}
-\underbrace{\mathcal{F}^{T}\delta\mathcal{X}}_{\substack{\text{Cartesian}\\\text{space}}} = \underbrace{\tau^{T} \delta\Theta}_{\substack{\text{Joint}\\ \text{space}}}
+\underbrace{\mathcal{F}^{T}\delta\mathcal{X}}_{\substack{\text{Cartesian}\\\text{space}}} = \underbrace{\tau^{T} \delta\underline{q}}_{\substack{\text{Joint}\\ \text{space}}}
 \end{displaymath}
 Recall that the Jacobian relates infinitesimal motions of the joints to infinitesimal motions of the end effector, e.g. $\delta \mathcal{X} = J \delta\Theta$. So we can write
 \begin{displaymath}
-\mathcal{F}^{T}J\delta\Theta = \tau^{T}\delta\Theta
+\mathcal{F}^{T}J\delta\Theta = \tau^{T}\delta\underline{q}
 \end{displaymath}
-And this has to be true for \textbf{any} value of $\delta \Theta$, so we can cancel this term out to get
+And this has to be true for \textbf{any} value of $\delta \underline{q}$, so we can cancel this term out to get
 \begin{displaymath}
 \mathcal{F}^{T}J = \tau^{T}
 \end{displaymath}
@@ -216,11 +216,11 @@ We will refer to the matrix above as a \textbf{velocity transformation} $T_{v}$:
 \begin{displaymath}
 ^{B}\mathcal{V}_{B} = \ \!^{B}_{A}T_{v}\ \!^{A}\mathcal{V}_{A}.
 \end{displaymath}
- Be careful not to confuse this with a generalized coordinate transformation matrix, which is often denoted as $^{i+1}_{i}T\ $!
+ Be careful not to confuse $T_{v}$ with a generalized coordinate transformation matrix, which is often denoted as $^{i+1}_{i}T\ $!
 
 In exercise 5.1 you are asked to derive the expression for $T_{v}^{-1}$, which is
 \begin{displaymath}
-\left[\begin{array}{c}^{A}v_{A} \\ ^{A}\omega_{A}\end{array}\right] = \left[\begin{array}{cc}^{A}_{B}R & P_{B,Org}\!\times\ \!^{A}_{B}R\ \!^{A} \\ 0 & ^{A}_{B}R\end{array}\right]\left[\begin{array}{c}^{B}v_{B} \\ ^{B}\omega_{B}\end{array}\right]
+\left[\begin{array}{c}^{A}v_{A} \\ ^{A}\omega_{A}\end{array}\right] = \left[\begin{array}{cc}^{A}_{B}R & ^{A}P_{B,Org}\!\times\ \!^{A}_{B}R\ \\ 0 & ^{A}_{B}R\end{array}\right]\left[\begin{array}{c}^{B}v_{B} \\ ^{B}\omega_{B}\end{array}\right]
 \end{displaymath}
 
 And similarly, from Equations 5.80 and 5.81, we can express the generalized force/moment transformation as 
