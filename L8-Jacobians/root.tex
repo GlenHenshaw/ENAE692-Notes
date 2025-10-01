@@ -117,21 +117,6 @@ This is the ``direct differentiation'' method. Works okay for arms with few degr
 
 Okay, what about rotation?
 
-To start, let's think about a vector $^{B}\underline{p}$ that is constant in frame $B$. But let's suppose that frame $B$ is itself rotating with respect to an inertially fixed frame $A$. In other words, the time derivative of the rotation matrix $^{A}_{B}\dot{R} \ne 0$. Then,
-\begin{displaymath}
-	^{A}\dot{\underline{p}} = \ ^{A}_{B}\dot{R}\ ^{B}\underline{p}
-\end{displaymath}
-or
-\begin{displaymath}
-	^{A}\underline{v}_{B} = \ ^{A}_{B}\dot{R}\ ^{B}\underline{p}
-\end{displaymath}
-%\begin{displaymath}
-%	\Omega = \dot{R}(\underline{q})R(\underline{q})^{T}
-%\end{displaymath}
-Substituting for $^{B}\underline{p}$, we can get
-\begin{displaymath}
-^{A}\underline{v}_{B} = \ ^{A}_{B}\dot{R}\ ^{A}_{B}R^{-1}\ ^{A}\underline{p}
-\end{displaymath}
 We know from equation 5.19 from the text that
 \begin{displaymath}
 	S_{\times} = \dot{R}R^{-1}
@@ -175,7 +160,7 @@ in the following manner:
 \end{displaymath}
 and we can carry this calculation out for the example above:
 \begin{displaymath}
-	R(\underline{q}) = \left[\begin{array}{ccc} c_{\theta} & s_{\theta} & 0 \\ -s_{\theta} & c_{\theta} & 0 \\ 0 & 0 & 1 \end{array}\right]
+	_{2}^{0}R(\underline{q}) = \left[\begin{array}{ccc} c_{\theta} & s_{\theta} & 0 \\ -s_{\theta} & c_{\theta} & 0 \\ 0 & 0 & 1 \end{array}\right]
 \end{displaymath}
 so
 \begin{displaymath}
@@ -183,19 +168,19 @@ so
 \end{displaymath}
 and
 \begin{eqnarray}
-R\sum_{j=1}^{N}\frac{\partial R(\underline{q})}{\partial q_{j}} = \left[ \begin{array}{ccc}  0 & c_{\theta}^{2}-s_{\theta}^{2} & 0 \\ s_{\theta}^{2}-c_{\theta}^{2} & 0 & 0 \\ 0 & 0 & 0 \end{array}\right]
+R\sum_{j=1}^{N}\frac{\partial R(\underline{q})}{\partial q_{j}} = \left[ \begin{array}{ccc}  0 & -1 & 0 \\ 1 & 0 & 0 \\ 0 & 0 & 0 \end{array}\right]
 \end{eqnarray}
 because all of the partials with respect to $r$ are zero. We can then ``pick off'' the terms in the matrix representing each of $\omega_{x}$, $\omega_{y}$, and $\omega_{z}$. In this case, of course, $\omega_{x}=0$ and $\omega_{y}=0$ and we are simply left with
 \begin{displaymath}
-	\omega_{z} = (s_{\theta}^{2}-c_{\theta}^{2})\dot{\theta}
+	\omega_{z} = (s_{\theta}^{2}+c_{\theta}^{2})\dot{\theta} = \dot{\theta}
 \end{displaymath}
 so
 \begin{displaymath}
-J_{\text{rot}} = \left[ \begin{array}{cc} 0 & s_{\theta}^{2}-c_{\theta}^{2} \end{array} \right]
+J_{\text{rot}} = \left[ \begin{array}{cc} 0 & 1 \end{array} \right]
 \end{displaymath}
 and the entire Jacobian is generally written as 
 \begin{displaymath}
-J = \left[ \begin{array}{cc} c_{\theta} & -r\ s_{\theta} \\ s_{\theta} & -r\ c_{\theta} \\ 0 & s_{\theta}^{2}-c_{\theta}^{2} \end{array} \right]
+J = \left[ \begin{array}{cc} c_{\theta} & -r\ s_{\theta} \\ s_{\theta} & -r\ c_{\theta} \\ 0 & 1 \end{array} \right]
 \end{displaymath}
 
 See Exercise 5.16 and the RPR Wrist Jacobian handout.
@@ -214,13 +199,13 @@ There is an alternative method called the ``cross--product method'' which is mor
 \\
 \\
 
-where the circle is the set of points swept out by the end effector and the solid arrow shows the current velocity of the end effector, which of course is normal to the circle. Finding the direction of this vector is, of course, a simple matter of crossing the unit vector passing through the link's center of rotation (out of the plane of the page) with the vector from the center of rotation to the end effector.
+where the circle is the set of points swept out by the end effector and the solid arrow shows the current velocity of the end effector, which of course is tangential to the circle. Finding the direction of this vector is, of course, a simple matter of crossing the unit vector passing through the link's center of rotation (out of the plane of the page) with the vector from the center of rotation to the end effector.
 
 Formally, let
 \begin{displaymath}
 	^{i}\hat{z}_{j} \triangleq\ ^{i}(^{j}\hat{z}_{j})
 \end{displaymath}
-i.e. the third column of $^{i}_{j}R =\ ^{i}_{j}R\ ^{j}z_{j}$. Then,
+i.e. the third column of $^{i}_{j}R =\ ^{i}_{j}R\ ^{i}z_{j}$. Then,
 \begin{displaymath}
 ^{i}J_{rot} = \left[\ ^{i}\hat{z}_{1}, ^{i}\hat{z}_{2}, \cdots, ^{i}\hat{z}_{N}\right] \Lambda
 \end{displaymath}
@@ -236,6 +221,8 @@ and
 \end{split}
 \end{displaymath}
 
+The formal proof of this is something we ask you to examine in Exercise 5.17.
+
 \subsection{Changing the frame of the Jacobian}
 Given $^{B}J$, find $^{A}J$.
 
@@ -245,7 +232,7 @@ By definition,
 \end{displaymath}
 Velocity is a free vector, so:
 \begin{displaymath}
-\left. \begin{array}{ccl} ^{A}\underline{\mathcal{V}}_{p} & = & ^{A}_{B}R\ \!^{B}\underline{\mathcal{V}}_{p} \\ ^{A}\underline{\omega} & = & ^{A}_{B}R\ \!^{B}\underline{\omega} \end{array} \right\} \Rightarrow \left[\begin{array}{c} ^{A}\underline{\mathcal{V}}_{p} \\ ^{A}\underline{\omega} \end{array} \right] = \left[ \begin{array}{cc} \ \!^{A}_{B}R & 0_{3 \times 3} \\ 0_{3 \times 3} &  \ \!^{A}_{B}R \end{array} \right]^{B}J(\underline{q})\dot{\underline{q}})
+\left. \begin{array}{ccl} ^{A}\underline{\mathcal{V}}_{p} & = & ^{A}_{B}R\ \!^{B}\underline{\mathcal{V}}_{p} \\ ^{A}\underline{\omega} & = & ^{A}_{B}R\ \!^{B}\underline{\omega} \end{array} \right\} \Rightarrow \left[\begin{array}{c} ^{A}\underline{\mathcal{V}}_{p} \\ ^{A}\underline{\omega} \end{array} \right] = \left[ \begin{array}{cc} \ \!^{A}_{B}R & 0_{3 \times 3} \\ 0_{3 \times 3} &  \ \!^{A}_{B}R \end{array} \right]^{B}J(\underline{q})\dot{\underline{q}}
 \end{displaymath}
 
 \subsection{Example: 3--link planar manipulator}
@@ -367,7 +354,11 @@ and finally
 \begin{displaymath}
 ^{2}(\ \!^{1}\underline{p}_{4}) = \left[\begin{array}{ccc}c_{2} & s_{2} & 0 \\ -s_{2} & c_{2} & 0 \\ 0 & 0 & 1 \end{array}\right]\left[\begin{array}{c} l_{1} \\ 0 \\ 0 \end{array}\right] + \left[\begin{array}{c} l_{2} + l_{3}c_{3} \\ l_{3}s_{3} \\ 0 \end{array} \right] = \left[\begin{array}{c} l_{2}+l_{2}c_{2}+l_{3}c_{3} \\ -l_{2}s_{2} + l_{3}s_{3} \\ 0 \end{array}\right]
 \end{displaymath}
-Performing the cross product yields the same results for $^{2}J_{trans}$. Notice how much easier it is to compute using this method!
+Assembling these vectors gives:
+\begin{displaymath}
+^{2}J_{trans} = \left[ \begin{array}{ccc} l_{1}s_{2} - l_{3}s_{3} & -l_{3}s_{3} & -l_{3}s_{3} \\ l_{1}c_{2}+l_{2} + l_{3}c_{3} & l_{2}+l_{3}c_{3} & l_{3}c_{3} \\ 0 & 0 & 0 \end{array} \right]
+\end{displaymath}
+So the cross product method yields the same results for $^{2}J_{trans}$. Notice how much easier it is to compute using this method!
 \end{document}
 
 
