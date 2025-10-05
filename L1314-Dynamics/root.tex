@@ -1,0 +1,228 @@
+\documentclass[fleqn]{article}
+
+\usepackage{tkz-base}
+\usepackage{tikz}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{tkz-euclide}
+
+\usetikzlibrary{svg.path}
+\usetikzlibrary{snakes}
+\usetikzlibrary{arrows}
+
+\setlength{\mathindent}{15pt}
+
+%opening
+\title{Dynamics}
+\author{Craig Carignan\\Glen Henshaw}
+
+\begin{document}
+
+\maketitle
+
+
+\subsection{Introduction}
+
+There are at least two reasons why we need to understand the dynamics of robotic manipulators. One is for control, which we'll discuss more in future lectures, but the basic idea is that if we have a desired trajectory $\{\underline{\theta}, \underline{\dot{\theta}}, \underline{\ddot{\theta}}\}$ and we want to find the joint torques $\underline{\tau}$ that will cause the robot to follow it. This is know as \emph{inverse dynamics}. The other reason is for simulation: we have a joint torque $\underline{\tau}$ and we want to find the joint trajectory $\{\underline{\theta}, \underline{\dot{\theta}}, \underline{\ddot{\theta}}\}$ this torque vector induces. This is known as \emph{forward dynamics}.
+
+To do either one, we must find the equations that relate the joint forces/torques to the joint motion.
+
+There are two basic approaches to this: the Newton--Euler formulation, which is based on forces and torques directly; and the Lagrangian formulation, which starts with an equation for the energy of the system.
+
+\subsection{Newton--Euler (Force--based) Approach}
+
+The advantage of the Newton--Euler approach is that it is inherently recurrent --- we can ``sweep'' down the arm from the shoulder to the wrist and back, considering a single joint at a time. This makes it very computationally efficient.
+
+We will begin by defining
+\begin{eqnarray}
+	\underline{F}_{i} & = & \text{inertial force acting on link $i$ at its Center of Mass (CM)} \nonumber \\
+	\underline{N}_{i} & = & \text{inertial torque acting on link $i$ at its Center of Mass} \nonumber
+\end{eqnarray}
+
+Newton's Law states that
+\begin{displaymath}
+	\underline{F}_{i} = m_{i}\underline{\dot{v}}_{c_{i}}
+\end{displaymath}
+where $m_{i}$ is the mass of link $i$ and $\underline{\dot{v}}_{c_{i}}$ is the acceleration of link $i$'s CM relative to the base frame.
+
+Euler's Equation is
+\begin{displaymath}
+	\underline{N}_{i} =\  ^{c_{i}}\!I\underline{\dot{\omega}}_{i} + \underline{\omega}_{i} \times x\ ^{c_{i}}\!I\underline{\omega}_{i}
+\end{displaymath}
+where $^{c_{i}}\!I$ is the inertia tensor of link $i$ relative to a frame $\{c_{i}\}$ whose origin is located at the link's CM, and $\underline{\omega}_{i}$ is the rotational velocity of link $i$. We get this by noting that
+\begin{displaymath}
+	\underline{N} = \frac{d}{dt} \left(\ ^{c}I\underline{\omega}\right)
+\end{displaymath}
+where $\underline{N}$ is the moment acting on joint $i$. We then expand the time--derivative of the right--hand side.
+
+If you are not familiar with inertia tensors, they the rotational equivalent of the mass. But unlike mass, which is a scalar, inertia tensors are 3x3 matrices of the following form:
+\begin{displaymath}
+	I = \left[ \begin{array}{ccc}
+		I_{xx} & -I_{xy} & -I_{xz} \\
+		-I_{xy} & I_{yy} & -I_{yz} \\
+		-I_{xz} & -I_{yz} & I_{zz} \end{array} \right]
+\end{displaymath}
+e.g. they are symmetric matrices with non--zeros on the diagonal. The terms on the diagonals are referred to as ``moments of inertia'' and the off--diagonal terms are ``products of inertia''.
+
+Also unlike mass, inertia tensors are expressed with respect to a specific reference frame that we must specify. We can re--express an inertia tensor with respect to a translated (but not rotated) frame via the parallel axis theorem:
+\begin{displaymath}
+	^{A}I = \ ^{C}I + m\left[P^{T}_{c}P_{c}I_{3\times3} - P_{c}P_{c}^{T}\right]
+\end{displaymath}
+where $P_{c} = \left[x_{c}, y_{c}, z_{c}\right]^{T}$ locates the center of mass relative to frame $A$, and $I_{3\times3}$ is the 3x3 identity matrix.
+
+To compute the forward dynamics, we need to transform what we know about the dynamic state of the manipulator $\{ \underline{F}, \underline{N}, \underline{\omega}, \underline{V} \}$ into $\{\underline{\tau}, \underline{\dot{q}}\}$. Our approach will be to start at the base frame and iterate outwards to the tooltip, calculating the linear and angular accelerations of each joint as a function of the linear and angular accelerations of all of the preceding joints. We'll then iterate back from tooltip to base frame, calculating the joint torques (and forces, for linear joints). In order to do this, we need tools for expressing accelerations and rotational rates in different frames.
+
+We'll start with acceleration. Equation 5.13 from Chapter 5 of the text gives us a way to express linear \emph{velocities} in different frames:
+\begin{displaymath}
+	^{A}\underline{v}_{p} = \ ^{A}_{B}R\ ^{B}\underline{v}_{p} + \ ^{A}\underline{\Omega}_{B} \times \ ^{A}_{B}R\ ^{B}\underline{p}_{p} + \ ^{A}\underline{v}_{B_{O}}
+\end{displaymath}
+
+ where $^{A}\underline{v}_{B_{O}}$ is the velocity of the origin of frame $B$ with respect to frame $A$. Because linear accelerations are just the time derivatives of velocities, we can differentiate both sides of this equation to get what we need:
+ \begin{eqnarray}
+ 	\frac{d}{dt}\left\{ \ ^{A}\underline{v}_{p}  \right\} & = &\left\{ \ ^{A}_{B}R \ ^{B}\underline{v}_{p} + \ ^{A}\underline{\Omega}_{B} \times \ ^{A}_{B}R\ ^{B}\underline{p}_{p} + \ ^{A}\underline{v}_{B_{O}} \right\} \nonumber \\
+	^{A}\underline{\dot{v}}_{p} & = & \ ^{A}_{B}R\ ^{B}\underline{\dot{v}}_{p} + \ ^{A}_{B}\dot{R}\ ^{B}\underline{v}_{p} + \ ^{A}\underline{\dot{\Omega}}_{B}\times\ ^{A}_{B}R\ ^{B}\underline{p}_{p}+ \ ^{A}\underline{\Omega}_{B}\times \frac{d}{dt}\left(\ ^{A}_{B}R\ ^{B}\underline{p}_{p}\right) + \ ^{A}\underline{\dot{v}}_{B_{O)}} \nonumber \\
+	&=& \ ^{A}_{B}R\ ^{B}\underline{\dot{v}}_{p} + \ ^{A}\underline{\Omega}_{B} \times\ ^{A}_{B}R\ ^{B}\underline{v}_{p} + \ ^{A}\underline{\dot{\Omega}}_{B}\times\ ^{A}_{B}R\ ^{B}\underline{p}_{p} \nonumber \\ && + \ ^{A}\underline{\Omega}_{B}\times(\ ^{A}\underline{\Omega}_{B}\times\ ^{A}_{B}R\ ^{B}\underline{p}_{p})  + \ ^{A}\underline{\Omega_{B}}\times\ ^{A}_{B}R\ ^{B}\underline{b}_{p} + \ ^{A}\underline{\dot{v}}_{B_{0}} \nonumber
+\end{eqnarray}
+Simplifying, we end up with
+\begin{displaymath}
+	^{A}\underline{\dot{v}}_{p} = \ ^{A}\underline{\dot{v}}_{B_{0}} + \ ^{A}_{B}R\ ^{B}\underline{\dot{v}}_{p} + 2\ ^{A}\underline{\Omega}_{B}\times\ ^{A}_{B}R\ ^{B}\underline{v}_{p} + \ ^{A}\underline{\dot{\Omega}}_{B}\times\ ^{A}_{B}R\ ^{B}\underline{p}_{p} + \ ^{A}\underline{\Omega}_{B}\times\left(\ ^{A}\underline{\Omega}_{B}\times\ ^{A}_{B}R\ ^{B}\underline{p}_{P}\right)
+\end{displaymath}
+
+We can do something similar with rotational acceleration. The text provides an equation to express rotational velocity in different frames (Equation 6.13):
+\begin{displaymath}
+ ^{A}\underline{\Omega}_{C} = \ ^{A}\Omega_{B} + \ ^{A}_{B}R\ ^{B}\Omega_{C}
+\end{displaymath}
+Differentiating both sides, we get
+\begin{eqnarray}
+	\frac{d}{dt} \left(\ ^{A}\underline{\Omega}_{C} \right) & = & \frac{d}{dt} \left(\ ^{A}\Omega_{B} + \ ^{A}_{B}R\ ^{B}\Omega_{C} \right) \nonumber \\
+	^{A}\underline{\dot{\Omega}}_{C} & = & \ ^{A}\underline{\dot{\Omega}}_{B} + \ ^{A}_{B}\dot{R}\ ^{B}\underline{\Omega}_{C} + \ ^{A}_{B}R\ ^{B}\underline{\dot{\Omega}}_{C} \nonumber \\
+	^{A}\underline{\dot{\Omega}}_{C} & = &\ ^{A}\underline{\dot{\Omega}}_{B} + \ ^{A}_{B}R\ ^{B}\underline{\dot{\Omega}}_{C} + \ ^{A}\underline{\Omega}_{B}\times\ ^{A}_{B}R\ ^{B}\underline{\Omega}_{C} \nonumber
+\end{eqnarray}
+
+We'll now use these results to do a forward sweep from the base frame to the tooltip, calculating accelerations as we go. First we need an expression for the linear acceleration of the link frame origin:
+\begin{eqnarray}
+^{i+1}\underline{\dot{v}}_{i+1} & = & \ ^{i+1}_{i}R\left[\ ^{i}\underline{\dot{\omega}}_{i}\times\ ^{i}\underline{p}_{i+1}\ ^{i}\underline{\omega}_{i}\times\left(\ ^{i}\underline{\omega}_{i}\times\ ^{i}\underline{p}_{i+1}\right)+\ ^{i}\underline{\dot{v}}_{i}\right] \nonumber \\
+&& + 2\ ^{i+1}\underline{\omega}_{i+1}\times\dot{d}_{i+1}\ ^{i+1}\hat{z}_{i+1} + \dot{d}_{i+1}\ ^{i+1}\hat{z}_{i+1}
+\end{eqnarray}
+Next, an expression for the linear acceleration of the link Center of Mass:
+\begin{eqnarray}
+^{i}_{0}R\left\{\ ^{0}\underline{\dot{v}}_{c_{i}} \right. & = & \left. \ ^{0}_{i}R\ ^{i}\underline{\dot{v}}_{c_{i}} + \ ^{0}\underline{\dot{\Omega}}_{i}\times\ ^{0}_{i}R\ ^{i}\underline{p}_{c_{i}}+\ ^{o}\underline{\dot{v}}_{i} + 2\ ^{0}\underline{\Omega}_{i}\times\ ^{0}_{i}R\ ^{i}\underline{v}_{c_{i}} + \ ^{0}\underline{\Omega}_{i}\times (\ ^{0}\underline{\Omega}_{i}\times\ ^{0}_{i}R\  ^{i}\underline{p}_{c_{i}}) \right\} \nonumber \\
+^{i}\dot{\underline{v}}_{c_{i}} & = & \ ^{i}\dot{\underline{\omega}}_{i} \times \ ^{i}\underline{p}_{c_{i}}+ \ ^{i}\underline{\omega}_{i}\times\left(\ ^{i}\underline{\omega}_{i}\times\ ^{i}\underline{p}_{c_{i}}\right) + \ ^{i}\underline{\dot{v}}_{i} \nonumber
+\end{eqnarray}
+
+Now we'll look at the angular acceleration of link frames:
+\begin{eqnarray}
+^{i}_{0}R\left\{\ ^{0}\underline{\dot{\Omega}}_{i+1}\right\} & = & ^{i}_{0}R\left\{\ ^{0}\underline{\dot{\Omega}}_{i}+\ ^{0}_{i}R\ ^{i}\underline{\dot{\Omega}}_{i+1}+\ ^{0}\underline{\Omega}_{i}\times\ ^{0}_{i}R\ ^{i}\underline{\Omega}_{i+1}\right\} \nonumber \\
+^{i+1}_{i}R\left\{\ ^{0}\underline{\dot{\omega}}_{i+1}\right\} & = & \ ^{i+1}_{i}R\left\{\ ^{i}\underline{\dot{\omega}}_{i} + \ ^{i}_{i+1}R\ ^{i+1}\hat{z}_{i+1}\ddot{\theta}_{i+1} + \ ^{i}\underline{\Omega}_{i+1}\!\times\ \!^{i}_{i+1}R\ ^{i+1}\hat{z}_{i+1}\dot{\theta}_{i+1} \right. \nonumber \\
+&& + \left. \ ^{i}\underline{\omega}_{i}\times\ ^{i}_{i+1}R\ ^{i+1}\hat{z}_{i+1}\dot{\theta}_{i+1}\right\} \nonumber
+\end{eqnarray}
+or
+\begin{equation}
+	^{i+1}\underline{\dot{\omega}}_{i+1} = \ ^{i+1}_{i}R\ ^{i}\dot{\underline{\omega}}_{i}+\ ^{i+1}_{i}R\ ^{i}\underline{\omega}_{i}\times\ ^{i+1}\hat{z}_{i+1}\dot{\theta}_{i+1}+\ ^{i+1}\hat{z}_{i+1}\ddot{\theta}_{i+1}
+\end{equation}
+We've already derived an expression for propagate the angular velocity:
+\begin{equation}
+	^{i+1}\underline{\omega}_{i+1} = \ ^{i+1}_{i}R\ ^{i}\underline{\omega}_{i} + \ ^{i+1}\hat{z}_{i+1}\dot{\theta}_{i+1}
+\end{equation}
+And we can pick out the forces and torques as:
+\begin{eqnarray}
+	^{i+1}\underline{F}_{i+1} & = & m_{i+1}\ ^{i+1}\underline{\dot{v}}_{c_{i+1}} \nonumber \\
+	^{i+1}\underline{N}_{i+1} & = & \ ^{c_{i+1}}I_{i+1} \ ^{i+1}\underline{\dot{\omega}}_{i+1} + \ ^{i+1}\underline{\omega}_{i+1}\times \ ^{c_{i+1}}I_{i+1}\ ^{i+1}\underline{\omega}_{i+1} \nonumber
+\end{eqnarray}
+Thus, the outward iteration consists of the following equations:
+\begin{eqnarray}
+	^{i+1}\underline{\omega}_{i+1} & = & \ ^{i+1}_{i}R\ ^{i}\underline{\omega}_{i} + \ ^{i+1}\hat{z}_{i+1}\dot{\theta}_{i+1} \\
+	^{i+1}\underline{\dot{\omega}}_{i+1} & = & \ ^{i+1}_{i}R\ ^{i}\dot{\underline{\omega}}_{i}+\ ^{i+1}_{i}R\ ^{i}\underline{\omega}_{i}\times\ ^{i+1}\hat{z}_{i+1}\dot{\theta}_{i+1}+\ ^{i+1}\hat{z}_{i+1}\ddot{\theta}_{i+1} \\
+	^{i+1}\underline{\dot{v}}_{i+1} & = & \ ^{i+1}_{i}R\left[\ ^{i}\underline{\dot{\omega}}_{i}\times\ ^{i}\underline{p}_{i+1}\ ^{i}\underline{\omega}_{i}\times\left(\ ^{i}\underline{\omega}_{i}\times\ ^{i}\underline{p}_{i+1}\right)+\ ^{i}\underline{\dot{v}}_{i}\right] \nonumber \\
+&& + 2\ ^{i+1}\underline{\omega}_{i+1}\times\dot{d}_{i+1}\ ^{i+1}\hat{z}_{i+1} + \dot{d}_{i+1}\ ^{i+1}\hat{z}_{i+1} \\
+	^{i+1}\underline{F}_{i+1} & = & m_{i+1}\ ^{i+1}\underline{\dot{v}}_{c_{i+1}} \\
+	^{i+1}\underline{N}_{i+1} & = & \ ^{c_{i+1}}I_{i+1} \ ^{i+1}\underline{\dot{\omega}}_{i+1} + \ ^{i+1}\underline{\omega}_{i+1}\times \ ^{c_{i+1}}I_{i+1}\ ^{i+1}\underline{\omega}_{i+1}
+\end{eqnarray}
+
+Now we need to propagate from the end effector to the wrist to calculate the forces and torques expressed on each joint. Just like with the static case we've already done, we'll start with a static force/moment balance:
+\begin{eqnarray}
+	\sum_{\text{link i}} \underline{f} & = & \ ^{i}\underline{F}_{i} = \ ^{i}\underline{f}_{i} - \ ^{i}_{i+1}R\ ^{i+1}\underline{f}_{i+1} \nonumber \\
+	\sum_{cm_{i}} \underline{n} & = & ^{i}\underline{N}_{i} = \ ^{i}\underline{n}_{i} - \ ^{i}\underline{n}_{i+1} + \left(-\ ^{i}\underline{p}_{c_{i}}\right)\times\ ^{i}\underline{f}_{i}-\left(\ ^{i}\underline{p}_{i+1}-\ ^{i}\underline{p}_{c_{i}}\right)\times\ ^{i}\underline{f}_{i+1} \nonumber
+\end{eqnarray}
+Using the force balance equation and some rotation matrices, the moment balance equation becomes
+\begin{equation}
+^{i}\underline{n}_{i} = \ ^{i}\underline{n}_{i}- \ ^{i}_{i+1}R\ ^{i+1}\underline{n}_{i+1} - \ ^{i}\underline{p}_{c_{i}}\times\ ^{i}\underline{F}_{i}- \ ^{i}\underline{p}_{i+1}\times\ ^{i}_{i+1}R\ ^{i+1}\underline{f}_{i+1} \nonumber
+\end{equation}
+So the inward iteration becomes
+\begin{eqnarray}
+	^{f}\underline{f}_{i} & = & ^{i}_{i+1}R\ ^{i+1}\underline{f}_{i+1} + \ ^{i}\underline{F}_{i} \\
+	^{i}\underline{n}_{i} & = & \ ^{i}\underline{N}_{i} + \ ^{i}_{i+1}R\ ^{i+1}\underline{n}_{i+1} + \ ^{i}\underline{p}_{c_{i}}\times\ ^{i}\underline{f}_{i}+\ ^{i}\underline{p}_{i+1}\times\ ^{i}_{i+1}R\ ^{i+1}\underline{f}_{i+1}
+\end{eqnarray}
+and then we can pick off the $z$ axis components:
+\begin{align}
+\tau_{i} = &\ ^{i}\underline{n}_{i}^{T}\ ^{i}\hat{z}_{i} & \text{revolute ($\tau_{i}$ is torque)}\\
+\tau_{i} = &\ ^{i}\underline{f}_{i}^{T}\ ^{i}\hat{z}_{i} & \text{prismatic ($\tau_{i}$ is force)}
+\end{align}
+Note that we can add a gravitational term by starting the outward iteration with the base frame by setting $^{0}\underline{\dot{v}}_{0}=-^{0}\underline{g}$. Similarly, we can add an external contact wrench by setting $^{N+1}\underline{f}_{N+1}= \text{contact force}$ and $^{N+1}\underline{n}_{N+1}= \text{contact torque}$ for the end effector frame $N+1$ at the start of the inward iteration.
+
+\subsection{Lagrangian (Energy--based) Approach}
+The Lagrangian approach has the advantages that it is much simpler to understand, easier to add complex dynamics such as flexibility in the links, and yields an analytical model. However, it is not as computationally efficient as the Newton--Euler approach, so most software written to calculate the dynamics of articulated rigid body manipulators goes with the Newton--Euler approach.
+
+The derive the dynamic equations with the Lagrangian approach, start with an expression for the kinetic and potential energy of the manipulator:
+\begin{displaymath}
+L \equiv \underbrace{K}_{\text{kinetic}} - \underbrace{P}_{\text{potential}}
+\end{displaymath}
+which is known as the Lagrangian. The equations of motion are then given by
+\begin{displaymath}
+Q_{i} = \frac{d}{dt}\left(\frac{2L}{2\dot{d}_{i}}\right) - \frac{\partial L}{\partial q_{i}}
+\end{displaymath}
+For an articulated rigid body manipulator,
+\begin{eqnarray}
+K & = &\sum_{i=1}^{N}\left( \underbrace{\frac{1}{2}m_{i}\ ^{i}\underline{v}_{c_{i}}^{T}\ ^{i}\underline{v}_{c_{i}}}_{\text{translational kinetic energy}} + \underbrace{\frac{1}{2}\ ^{i}\underline{\omega}_{i}^{T}\ ^{c_{i}}I_{i}\ ^{i}\underline{\omega}_{i}}_{\text{rotational kinetic energy}} \right) \nonumber
+\end{eqnarray}
+
+Note that we can calculate $^{i}\underline{v}_{c_{i}}$ as follows:
+\begin{eqnarray}
+^{0}\underline{v}_{c_{i}} & = & ^{0}\underline{\Omega}_{i}\times\ ^{0}_{i}R\ ^{i}\underline{p}_{c_{i}} + \ ^{0}\underline{v}_{i} \nonumber \\
+^{i}_{0}R\left\{ \underline{v}_{c_{i}} \right. & = & \left. \underline{\omega}_{i}\times\ ^{0}_{i}R\ ^{i}\underline{p}_{0}+\underline{v}_{i} \right\} \nonumber \\
+^{i}\underline{v}_{c_{i+1}} & = & \ ^{i+1}R_{i}\left(\ ^{i}\underline{v}_{i} + \ ^{i}\underline{\omega}_{i}\times\ ^{i}\underline{p}_{i+1}\right) + \underline{\dot{d}}_{i+1}\ ^{i+1}\hat{z}_{i+1} \nonumber
+\end{eqnarray}
+With a lot of factoring, we can smoosh this into the form
+\begin{eqnarray}
+K\!\left(\underline{q}, \underline{\dot{q}}\right) & = & \frac{1}{2}\underline{\dot{q}}^{T}M(\underline{q})\underline{\dot{q}} +  C(\underline{q})\underline{\dot{q}} + B(\underline{q})\dot{\underline{q}} \nonumber
+\end{eqnarray}
+Also,
+\begin{equation}
+P(\underline{q}) = \sum_{i=1}^{N} -m_{i}\ ^{0}\underline{g}^{T}\ ^{0}\underline{p}_{c_{i}} = E(\underline{q})\nonumber
+\end{equation}
+which nearly always refers only to gravitational terms.
+Thus, the dynamics of a manipulator can be expressed in full as 
+\begin{equation}
+	\underline{\tau} = \frac{1}{2}\underline{\dot{q}}^{T}M(\underline{q})\underline{\dot{q}} +  C(\underline{q})\underline{\dot{q}} + B(\underline{q})\dot{\underline{q}} + E(\underline{q})
+\end{equation}
+This is known as a ``Hamiltonian system'', and is quite general. $E(\cdot)$ can also end up including frictional terms or other terms exerted on the manipulator by the environment.
+
+\subsubsection{Example 6.3}
+Let's consider the dynamics of standard two--link planar arm, in order to understand the structure of robot arm dynamics.
+
+From Section 6.8, we know that the full dynamics of this arm are
+\begin{eqnarray}
+	\tau_{1} & = & m_{2}l_{2}^{2}(\ddot{\theta}_{1}+\ddot{\theta}_{2}) + m_{2}l_{1}l_{2}c_{2}(2\ddot{\theta}_{1} + \ddot{\theta}_{2}) \nonumber \\
+	&&+(m_{1}+m_{2})l_{2}^{2}\ddot{\theta}_{1}-m_{2}l_{1}l_{2}s_{2}\dot{\theta}_{2}^{2} - 2m_{2}l_{1}l_{2}s_{2}\dot{\theta}_{1}\dot{\theta}_{2} + m_{2}l_{2}gc_{12}+(m_{1}m_{2})l_{1}gc_{1} \nonumber \\
+	\tau_{2} & = & m_{2}l_{1}l_{2}c_{2}\ddot{\theta}_{1}+m_{2}l_{1}l_{2}s_{2}\dot{\theta}_{1}^{2} + m_{2}l_{2}gc_{12}+m_{2}l_{2}^{2}(\ddot{\theta}_{1}+\ddot{\theta}_{2}) \nonumber
+\end{eqnarray}
+We can rewrite this is configuration space form as:
+\begin{equation}
+\underline{\tau} = M(\underline{q})\ddot{q} + B(\underline{q})[\underline{\dot{q}}\underline{\dot{q}}] + C(\underline{q})[\underline{\dot{q}}^{2}]+G(\underline{q})g \nonumber
+\end{equation}
+where
+\begin{displaymath}
+M(\underline{q}) = \left[\begin{array}{ll} l_{2}^{2}m_{2}+2l_{1}l_{2}m_{2}c_{2}+l_{1}^{2}(m_{1}+m_{2}) & l_{2}^{2}m_{2}+l_{1}l_{2}m_{2}c_{2} \\ l_{2}^{2}m_{2}+l_{1}l_{1}m_{2}c_{2} & l_{2}^{2}m_{2} \end{array} \right]
+\end{displaymath}
+Note that $M=M^{T}$ and that $1/2\underline{\dot{q}}^{T}M\underline{\dot{q}}>0$. This implies that $M^{-1}$ always exists.
+
+The ``Coriolis'' term is
+\begin{displaymath}
+B(\underline{q}) = \left[\begin{array}{c} -2m_{2}l_{1}l_{2}s_{2} \\ 0 \end{array}\right]
+\end{displaymath}
+and the centripetal term is
+\begin{displaymath}
+C(\underline{q}) = \left[ \begin{array}{cc} 0 & -m_{2}l_{1}l_{2}s_{2} \\ m_{2}l_{1}l_{2}s_{2} & 0 \end{array} \right]
+\end{displaymath}
+\end{document}
