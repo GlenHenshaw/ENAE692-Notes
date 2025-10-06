@@ -225,7 +225,7 @@ From Section 6.8, we know that the full dynamics of this arm are
 \end{eqnarray}
 We can rewrite this is configuration space form as:
 \begin{equation}
-\underline{\tau} = M(\underline{q})\ddot{q} + B(\underline{q})\underline{\dot{q}} + C(\underline{q})\underline{\dot{q}}^{2}+G(\underline{q})g \nonumber
+\underline{\tau} = M(\underline{q})\ddot{q} + B(\underline{q})\underline{\dot{q}} + C(\underline{q})\underline{\dot{q}}^{2}+G(\underline{q}) \nonumber
 \end{equation}
 where
 \begin{displaymath}
@@ -233,12 +233,16 @@ M(\underline{q}) = \left[\begin{array}{ll} l_{2}^{2}m_{2}+2l_{1}l_{2}m_{2}c_{2}+
 \end{displaymath}
 Note that $M=M^{T}$ and that $1/2\underline{\dot{q}}^{T}M\underline{\dot{q}}>0$. This implies that $M^{-1}$ always exists.
 
-The ``Coriolis'' term is
+The Coriolis term is
 \begin{displaymath}
 B(\underline{q}) = \left[\begin{array}{c} -2m_{2}l_{1}l_{2}s_{2} \\ 0 \end{array}\right]
 \end{displaymath}
-and the centripetal term is
+The centripetal term is
 \begin{displaymath}
 C(\underline{q}) = \left[ \begin{array}{cc} 0 & -m_{2}l_{1}l_{2}s_{2} \\ m_{2}l_{1}l_{2}s_{2} & 0 \end{array} \right]
+\end{displaymath}
+And the gravity term is
+\begin{displaymath}
+G(\underline{q}) = \left[ \begin{array}{c} m_{2}l_{2}c_{12} + (m_{1}+m_{2})l_{1}c_{1} \\ m_{2}l_{2}c_{12} \end{array} \right]
 \end{displaymath}
 \end{document}
