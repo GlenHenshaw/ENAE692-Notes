@@ -158,17 +158,23 @@ in which case,
 and the two columns are not linearly dependent.
 
 \subsubsection{Joint velocities near the singularity}
+Multiplying the Jacobian relationship out, we get
+\begin{eqnarray}
+^{3}\dot{x} & = & l_{1}s_{2}\dot{\theta}_{1} \nonumber \\
+^{3}\dot{y} & = & (l_{1}x_{2}+l_{2})\dot{\theta}_{1} + l_{2}\dot{\theta}_{2} \nonumber
+\end{eqnarray}
+Solving for $\dot{\theta}_{1}, \dot{\theta}_{2}$:
 \begin{displaymath}
-	\dot{\underline{q}} = \ \!^{3}J^{-1}\ \!^{3}\underline{x} \Rightarrow \ \!^{3}J^{-1} = \left[\begin{array}{cc} \frac{1}{l_{1}s_{2}} & 0 \\ -(\frac{1}{l_{1}s_{2}} + \frac{c_{2}}{l_{2}c_{2}}) & \frac{1}{l_{2}} \end{array}\right]
+	\dot{\underline{q}} = \ \!^{3}J^{-1}\ \!^{3}\underline{x} \Rightarrow \ \!^{3}J^{-1} = \left[\begin{array}{cc} \frac{1}{l_{1}s_{2}} & 0 \\ -(\frac{1}{l_{1}s_{2}} + \frac{c_{2}}{l_{2}s_{2}}) & \frac{1}{l_{2}} \end{array}\right]
 \end{displaymath}
 so
 \begin{eqnarray}
-	\dot{\theta_{1}} & = & \frac{1}{l_{1}s_{2}}\dot{x} \nonumber\\
-	\dot{\theta_{2}} & = & -\left(\frac{1}{l_{1}s_{2}} + \frac{c_{2}}{l_{2}s_{2}}\right)\dot{x} \nonumber
+	\dot{\theta_{1}} & = & \frac{1}{l_{1}s_{2}}\ ^{3}\dot{x} \nonumber\\
+	\dot{\theta_{2}} & = & -\left(\frac{1}{l_{1}s_{2}} + \frac{c_{2}}{l_{2}s_{2}}\right)\ ^{3}\dot{x} +\frac{1}{l_{2}}\ ^{3}\dot{y}\nonumber
 \end{eqnarray}
-which implies that the arm cannot move in the $y$ direction, and an attempt to set $\dot{\underline{x}}$ will result in the denominators of the fractions becoming zero, hence the joint rates will become infinite.
+which implies that the arm cannot move in the $x$ direction with respect to frame 3, since the denominators of the fractions are zero. If you're very careful with how you compute, you can maybe pass through this point by setting $\dot{x}$ to exactly zero, but trying to move even an infinitesimal amount along the $x$ direction with respect to frame 3 will result in the joint rates becoming infinitely large.
 
-\textbf{NOTE, however} that even if $\theta_{2}$ is not exactly $0^{\circ}$ or $180^{\circ}$ but is merely close to one of these values, the denominators of the expressions will be quite large. Hence, the singularity is ``felt'' for some distance away; exactly how far depends on the maximum joint rates that are acceptable and/or achievable.
+\textbf{NOTE} that even if $\theta_{2}$ is not exactly $0^{\circ}$ or $180^{\circ}$ but is merely close to one of these values, the denominators of the expressions will be quite large. Hence, the singularity is ``felt'' for some distance away; exactly how far depends on the maximum joint rates that are acceptable and/or achievable.
 
 \subsubsection{End Effector forces near the singularity}
 \begin{displaymath}
@@ -269,15 +275,17 @@ OK, what is $\underline{x}$ here?
 \end{displaymath}
 $\underline{p}$ is straightforward: It's your Cartesian position vector. But what is in the rotation spot?
 
-It depends on how you have chosen to represent orientation, \textbf{but it must be a three--parameter representation}. If you are using Euler or fixed angles, it can be simply those. But if it's a quaternion, you have a bit of a problem, because quaternions have four parameters. Remember, though, that quaternions are defined as 
+It depends on how you have chosen to represent orientation, \textbf{but it must be a three--parameter representation}. If you are using 3--2--1 Euler angles, it can be simply those. If you're using some other set of Euler or fixed angles, you have a problem, and will need to re--derive the Jacobian in terms of whatever representation you are using, because for Euler angles other than the 3--2--1 set, the derivative of the angles is not along the same axes as roll, pitch, and yaw.
+
+If it's a quaternion, you also have a bit of a problem, because quaternions have four parameters. Remember, though, that quaternions are defined as 
 \begin{displaymath}
-	\underset{\sim}{q} = \left[ \begin{array}{c} \psi \\ \hat{n} \end{array} \right]
+	\underset{\sim}{q} = \left[ \begin{array}{c} \psi \\ \hat{n} \end{array} \right] = \left[\begin{array}{c} \cos \frac{\psi}{2} \\ \hat{n} \sin \frac{\psi}{s} \end{array} \right]
 \end{displaymath}
 where $\psi$ is a scalar and $\hat{n}$ is a 3--vector. \textbf{In a small angle situation}, $\psi$ is close to unity and $\hat{n}$ is close to zero, and exactly zero if the angle is zero. In fact, for small angles, $\hat{n}$ approximates $1/2$ time the 3--2--1 Euler angles.  In general we use $\hat{n}$ as the rotation part.
 
 So what's $\Delta \underline{x}$? Again, for the positional part it's straightforward: it's $\underline{p}-\underline{p}_{0}$. And again, for rotation... it's complicated.
 
-If you are using an Euler angle or fixed angle set, you can subtract them. This hand--waves over a bunch of math but as a small angle approximation it holds, and only extreme pedants (or possibly those cramming fo their doctoral quals) need go any further. So if you are using the $\left[\alpha, \beta, \gamma\right]^{T}$ set:
+If you are using an Euler angle or fixed angle set, you can subtract them. This hand--waves over a bunch of math but as a small angle approximation it holds, and only extreme pedants (or possibly those cramming fo their doctoral quals) need go any further. So if you are using the 3--2--1 ($\left[\alpha, \beta, \gamma\right]^{T}$) set:
 \begin{displaymath}
 \underline{x} = \left[ \begin{array}{c} \underline{p} \\ \alpha-\alpha_{0} \\ \beta-\beta_{0} \\ \gamma-\gamma_{0} \end{array}\right]
 \end{displaymath}

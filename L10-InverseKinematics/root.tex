@@ -207,15 +207,14 @@ Closed--form solutions are great when you can find them. They are numerically st
 
  
 \subsection{Pieper's Method}
- There is, however, one important case in which a closed--form solution can be found: when \begin{itemize} \item you have a 6 DOF arm; and \item three consecutive axes intersect at a point (usually the first three or the last three).\end{itemize}
- This requirement means that the problem can be decomposed into two successive 3--DOF problems. By far the most common case is a revolute manipulator where the last three rotational axes intersect; this is sometimes known as a \textit{spherical wrist}. It implies that the point of intersection is at the origin of all three frames.
- 
- This technique is called ``Pieper's Method''.
+There is, however, one important case in which a closed--form solution can (usually) be found: when \begin{itemize} \item you have a 6 DOF arm; and \item three consecutive axes intersect at a point (usually the first three or the last three).\end{itemize}
+
+This requirement means that the problem can be decomposed into two successive 3--DOF problems. By far the most common case is a revolute manipulator where the last three rotational axes intersect; this is sometimes known as a \textit{spherical wrist}. It implies that the point of intersection is at the origin of all three frames. This technique is called ``Pieper's Method''. it doesn't guarantee that you can solve either problem, but it is usually the case that finding a closed--form solution is tractable with some clever algebra and trigonometry. 
  
  The key observation is that $^{0}\underline{p}_{4} = \ \!^{0}\underline{p}_{5} = \ \!^{0}\underline{p}_{6}$.
  
+ \begin{samepage}
  Steps:
- 
  \begin{itemize}
  	\item Solve for $^{0}\underline{p}_{4}$:
  	\begin{displaymath} ^{0}\underline{p}_{T} = \ \!^{0}\underline{p}_{4} + \ \!^{0}_{4}R\ \!\crossout{^{4}\underline{p}_{6}}^{0} + \underbrace{^{0}_{6}R}_{=\ \!^{0}_{T}R}\underbrace{\ \!^{6}\underline{p}_{T}}_{\text{\ given}} \end{displaymath}
@@ -231,5 +230,5 @@ Closed--form solutions are great when you can find them. They are numerically st
  	\end{displaymath}
  	Note that this also gives three equations in three unknowns.
  \end{itemize}
- 
+\end{samepage}
 \end{document}

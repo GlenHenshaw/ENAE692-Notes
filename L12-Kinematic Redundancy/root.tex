@@ -7,6 +7,7 @@
 \usepackage{relsize}
 \usepackage{tkz-base}
 \usepackage{tkz-euclide}
+\usepackage{graphicx}
 
 \usetikzlibrary{svg.path}
 \usetikzlibrary{arrows}
@@ -68,7 +69,7 @@ Note that you can change the initial optimization problem and derive different p
 \begin{displaymath}
 \min \|\Delta \underline{q}\|_{2}^{2} + \gamma D(\underline{q} + \Delta\underline{q}\Delta t)\ \ \text{given}\ \ 	\Delta \underline{x} = J(\underline{q})\Delta\underline{q}
 \end{displaymath}
-We proceed as above:
+where $\gamma$ is a gain. In this case, it lets you ``trade off'' how much you care about small joint velocities versus how much you care about staying away from collisions. We proceed as above:
 \begin{displaymath}
 C = \frac{1}{2} \Delta \underline{q}^{T}\Delta\underline{q} + \gamma D(\underline{q} + \Delta\underline{q}\Delta t)+ \underline{\lambda}^{T}(\Delta\underline{x} - J\Delta\underline{q})
 \end{displaymath}
@@ -91,7 +92,7 @@ and substituting this into \ref{fourth} gives
 \begin{eqnarray}
     \Delta\underline{q} & = & J^{T}(JJ^{T})^{-1}\left[\Delta\underline{x} + \gamma J \frac{\partial D}{\partial \Delta\underline{q}}^{T}\Delta t\right] - \gamma \frac{\partial D}{\partial \Delta\underline{q}}^{T}\Delta t \nonumber \\
     & = & J^{\dag} \Delta\underline{x} + \gamma J^{\dag} J \frac{\partial D}{\partial \Delta\underline{q}}^{T}\Delta t  -\gamma \frac{\partial D}{\partial \Delta\underline{q}}^{T}\Delta t \nonumber \\
-    & = & J^{\dag} \Delta\underline{x} + \left[J^{\dag}J - I\right] \frac{\partial D}{\partial \Delta\underline{q}}^{T}\Delta t 
+    & = & J^{\dag} \Delta\underline{x} + \gamma \left[J^{\dag}J - I\right] \frac{\partial D}{\partial \Delta\underline{q}}^{T}\Delta t 
 \end{eqnarray}
 Notice that this result is identical to the one above except for the addition of the strange partial derivative of the distance function. It turns out that $\left[J^{\dag}J - I\right]$ is a projection into the nullspace of $J$, i.e. we can choose any vector $\underline{r}$ and multiply it by the projection and it will not change the result:
 \begin{displaymath}
@@ -214,6 +215,11 @@ The self motion is an ``orbit'' of the elbow about the line $\overrightarrow{sw}
 	\end{tikzpicture}
 \end{figure}
 
+Editor's note: here is the original diagram taken from the paper that details this analysis, which may be more helpful (Kreutz-Delgado, Kenneth et al. “Kinematic analysis of 7 DOF anthropomorphic arms.” Proceedings., IEEE International Conference on Robotics and Automation (1990): 824-830 vol.2.):
+\begin{center}
+\includegraphics[height=3in]{armdiagram.png}
+\end{center}
+
 Define 
 \begin{eqnarray}
  \underline{w} & = & \overrightarrow{sw} = \underline{p}_{w}-\underline{p}_{r} \nonumber \\
@@ -237,6 +243,7 @@ Define
         \draw [decorate,decoration={brace,amplitude=10pt,mirror,raise=4pt},yshift=0pt] (A) -- (2,0) node[pos=0.5,below=0.5]{$\underline{d}$};
 	\end{tikzpicture}
 \end{figure}
+
 
 Then
 \begin{eqnarray}
@@ -278,13 +285,13 @@ where $q_{i}^{\mathrm{min}}$ and $q_{i}^{\mathrm{max}}$ are the minimum and maxi
 \subsection{Answer}
 Recall that we derived a general formula to do this in Lecture 12 (specifically, equation 6):
 \begin{displaymath}
-\Delta\underline{q} = J^{\dag}\Delta\underline{x} + \left[ J^{\dag}J-I\right] \frac{\partial D}{\partial \Delta\underline{q}}^{T}\Delta t
+\Delta\underline{q} = J^{\dag}\Delta\underline{x} + \gamma \left[ J^{\dag}J-I\right] \frac{\partial D}{\partial \Delta\underline{q}}^{T}\Delta t
 \end{displaymath}
 So all we have to do is take the partial of $D$ with respect to each of the joint angles $q_{i}$:
 \begin{displaymath}
 	\frac{\partial D}{\partial \Delta\underline{q}} = 2\left[
 		\begin{matrix}
-			\frac{q_{0} - n_{0}^{\mathrm{mid}}}{q_{0}^{\mathrm{min}} - q_{0}^{\mathrm{max}}} & 0 & \dots & 0 \\
+			\frac{q_{0} - q_{0}^{\mathrm{mid}}}{q_{0}^{\mathrm{min}} - q_{0}^{\mathrm{max}}} & 0 & \dots & 0 \\
 			0 & \frac{q_{1} - q_{1}^{\mathrm{mid}}}{q_{1}^{\mathrm{min}} - q_{1}^{\mathrm{max}}} & \dots & 0 \\
 			\vdots & \vdots & \ddots & \vdots \\
 			0 & 0 & \cdots & \frac{q_{f} - n_{f}^{\mathrm{mid}}}{q_{f}^{\mathrm{min}} - q_{f}^{\mathrm{max}}}
@@ -292,7 +299,7 @@ So all we have to do is take the partial of $D$ with respect to each of the join
 \end{displaymath}
 Noting that is diagonal, $D=D^{T}$, and therefore the full RMRC algorithm is:
 \begin{displaymath}
-\Delta\underline{q} = J^{\dag}\Delta\underline{x} + \left[ J^{\dag}J-I\right]G\ \Delta t
+\Delta\underline{q} = J^{\dag}\Delta\underline{x} + \gamma \left[ J^{\dag}J-I\right]G\ \Delta t
 \end{displaymath}
 
 Citation: Hanai, Aaron, Doctoral dissertation, ``A Unified Autonomus Underwater Vehicle--Manipulator System'', University of Hawai`i--Manoa, 2010, pg. 12
