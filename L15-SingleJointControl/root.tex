@@ -156,7 +156,8 @@ or
 \begin{displaymath}
  m\ddot{q} + (b+k_{v})\dot{q} + k_{p}(q_{d}-q) + e(q, \dot{q}) = 0
 \end{displaymath}
-if we assume, for the moment, that $q_{d}=0$ and if we neglect $e$, we can see that this looks precisely like a spring--mass--damper system with a mass, damping constant, and spring stiffness that we have specified. Assuming all of these coefficients are positive, the system will have a stable equilibrium point at the origin.
+
+If we assume, for the moment, that $q_{d}=0$ and if we neglect $e$, we can see that this looks precisely like a spring--mass--damper system with a mass, damping constant, and spring stiffness that we have specified. Assuming all of these coefficients are positive, the system will have a stable equilibrium point at the origin.
 
 A common way of writing this equation is the ``normal form'':
 \begin{displaymath}
@@ -408,8 +409,9 @@ Assume we have a linear dynamic system
  m\ddot{x}+b\dot{x}+kx=f
 \end{displaymath}
 \begin{enumerate}
- \item Find $x(t)$ for the ICs $x(0)=-1$, $\dot{x}(0)=0$
- Characteristic equation:
+ \item Find $x(t)$ for the ICs $x(0)=-1$, $\dot{x}(0)=0$, assuming that $m=$, $b=1$, and $k=1$.
+ 
+Characteristic equation:
  \begin{displaymath}
 s^{2}+\underbrace{1\cdot s}_{2\zeta\omega_{n}} + \underbrace{1}_{\omega_{n}^{2}} = 0
  \end{displaymath}
@@ -442,7 +444,7 @@ or
 \begin{displaymath}
  f_{c} = -k_{p}x-k_{v}\dot{x}
 \end{displaymath}
-what gains do we need to achieve critical damping and stiffness=16?
+What gains do we need to achieve critical damping and stiffness=16?
 \begin{eqnarray}
  \text{Dynamics:} && f = m\ddot{x}+b\dot{x}+kv \nonumber \\
  \text{Control:} && f_{c} = -k_{p}x - k_{v}\dot{x} \nonumber
