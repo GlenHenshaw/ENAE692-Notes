@@ -102,7 +102,7 @@ There are several performance criteria we want out of controllers:
 
 The easiest and most common approach to controlling robot arms is INDEPENDENT JOINT CONTROL, where we assume that each joint of the arm is dynamically independent of all the others, e.g that the dynamics really look like
 \begin{equation}
- \tau_{i} = m_{i}\ddot{q}_{i} + b_{i}\dot{q}_{i}+e_{i}(q{i}) \label{SMD}
+ \tau_{i} = m_{i}\ddot{q}_{i} + b_{i}\dot{q}_{i}+e_{i}(q_{i}) \label{SMD}
 \end{equation}
 Notice that this looks like the dynamics of a simple spring--mass--damper system:
 
@@ -227,9 +227,9 @@ and $\omega_{d}$ is the ``damped natural frequency'',
 \begin{displaymath}
  \omega_{d} = \sqrt{1-\zeta^{2}}\omega_{n}
 \end{displaymath}
+\pagebreak
 
-This is the step response:
-
+This is the step response for an underdamped system:
 \begin{figure}[h!]
  \centering
  \begin{tikzpicture}
@@ -306,7 +306,7 @@ This is the step response:
 
 where:
 \begin{eqnarray}
-    & M_{p} = e^{\frac{-\zeta\omega_{n}}{\omega_{d}}}\pi \times 100\% & \ \ \ \text{``Peak Overshoot''} \nonumber\\
+    & M_{p} = e^{\frac{-\zeta\omega_{n}\pi}{\omega_{d}}} \times 100\% & \ \ \ \text{``Peak Overshoot''} \nonumber\\
     & t_{p} = \frac{\pi}{\omega_{d}} & \ \ \ \text{``Peak time (1/2 period)''} \nonumber \\
     & t_{r} = \frac{1}{\omega_{d}}\tan^{-1}\left(\frac{\omega_{d}}{\zeta\omega_{n}}\right) & \ \ \  \text{``rise time''}\nonumber \\
     & t_{s} = \frac{4}{\zeta\omega_{n}} & \ \ \ \text{``settling time (2\%)''} \nonumber
@@ -402,15 +402,51 @@ This is (hopefully!) decaying but oscillatory:
 
 \end{tikzpicture}
 \end{enumerate}
+\pagebreak
 
 \subsection{Example}
 Assume we have a linear dynamic system
 \begin{displaymath}
  m\ddot{x}+b\dot{x}+kx=f
 \end{displaymath}
-\begin{enumerate}
- \item Find $x(t)$ for the ICs $x(0)=-1$, $\dot{x}(0)=0$, assuming that $m=$, $b=1$, and $k=1$.
+\begin{figure}[h!]
+\centering
+ \begin{tikzpicture}[every node/.style={outer sep=0pt},thick,
+ mass/.style={draw,thick},
+ spring/.style={thick,decorate,decoration={zigzag,pre length=0.3cm,post
+ length=0.3cm,segment length=6}},
+ ground/.style={fill,pattern=north east lines,draw=none,minimum
+ width=0.75cm,minimum height=0.3cm},
+ dampic/.pic={\fill[white] (-0.1,-0.3) rectangle (0.3,0.3);
+ \draw (-0.3,0.3) -| (0.3,-0.3) -- (-0.3,-0.3);
+ \draw[line width=1mm] (-0.1,-0.3) -- (-0.1,0.3);}]
+
+  \node[mass,minimum width=2cm,minimum height=1.5cm,fill=green!50] (m1) {$m$};
+   \node[left=2cm of m1,ground,minimum width=3mm,minimum height=2.5cm] (g1){};
+  \draw (g1.north east) -- (g1.south east);
+
+  \draw[spring] ([yshift=3mm]g1.east) coordinate(aux)
+   -- (m1.west|-aux) node[midway,above=1mm]{$k$};
+
+  \draw ([yshift=-3mm]g1.east) coordinate(aux')
+   -- (m1.west|-aux') pic[midway]{dampic} node[midway,below=3mm]{$b$};
  
+  \foreach \X in {1}  
+  {\draw[thin] (m\X.north) -- ++ (0,1) coordinate[midway](aux\X);
+   \draw[latex-] (aux\X) -- ++ (-0.5,0) node[above]{$\tau$}; 
+   \draw[thin,dashed] (m\X.south) -- ++ (0,-1) coordinate[pos=0.85](aux'\X);
+   \draw[latex-] (aux'\X) -- ++ (-1,0) node[midway,above]{$x$}
+    node[left,ground,minimum height=7mm,minimum width=1mm] (g'\X){};
+   \draw[thick] (g'\X.north east) -- (g'\X.south east);
+  }
+
+\end{tikzpicture}
+\end{figure}
+where $m=$, $b=1$, and $k=1$.
+\begin{enumerate}
+ \item Find $x(t)$ for the ICs $x(0)=-1$, $\dot{x}(0)=0$.
+ 
+
 Characteristic equation:
  \begin{displaymath}
 s^{2}+\underbrace{1\cdot s}_{2\zeta\omega_{n}} + \underbrace{1}_{\omega_{n}^{2}} = 0

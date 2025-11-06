@@ -47,9 +47,9 @@ where
 \end{eqnarray}
 and the servo portion is
 \begin{displaymath}
- f = \ddot{x}_{d} + k_{v}\dot{e}+k_{p}e
+ f' = \ddot{x}_{d} + k_{v}\dot{e}+k_{p}e
 \end{displaymath}
-
+where $e \equiv x_{d}-x$.
 If we assume we know the dynamics perfectly, and can therefore cancel them exactly, then we're just left with a dynamic system where the error is clearly stable, by inspection:
 \begin{eqnarray}
   m\ddot{x}+b\dot{x}+qx^{3} & = & m\left(\ddot{x}_{d} + k_{v}\dot{e}+k_{p}e\right) +b\dot{x}+qx^{3} \nonumber \\
@@ -313,7 +313,7 @@ so
 \end{eqnarray}
 which indicates that motion in the $x$ direction is not possible. Which makes sense, this is a singular pose. When we try to do the Jacobian inversion, then, $J^{-1}$ explodes.
 \item $J^{T}$ Control
-\begin{eqnarray}=
+\begin{eqnarray}
  \underline{\tau} & = & J^{T}\underline{F} \nonumber \\
  \underline{F} & = & K\ \delta\underline{x} \nonumber
 \end{eqnarray}

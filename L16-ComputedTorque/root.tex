@@ -143,7 +143,7 @@ If we plug Equation \ref{computedtorque} into Equation \ref{hamiltonian} we get:
  \end{displaymath}
  or
  \begin{displaymath}
- M(\underline{q})(\ddot{\underline{q}} - \ddot{\underline{q}}_{d} + K_{p}(\underline{q} - \underline{q}_{d})+ K_{v}(\underline{\dot{q}} + \underline{\dot{q}}_{d})) + C(\underline{q}, \underline{\dot{q}})(\dot{\underline{q}} - \dot{\underline{q}})  = 0 
+ M(\underline{q})(\ddot{\underline{q}} - \ddot{\underline{q}}_{d} + K_{p}(\underline{q} - \underline{q}_{d})+ K_{v}(\underline{\dot{q}} - \underline{\dot{q}}_{d})))  = 0 
 \end{displaymath}
 and if we define
 \begin{eqnarray}
@@ -193,15 +193,15 @@ So let's consider the following simplified system plus controller:
 our old friend the spring--mass--damper system.
 The total energy of this system is
 \begin{equation}
- v = \frac{1}{2}m\dot{x}^{2} + \frac{1}{2}kx^{2} \label{smdenergy}
+ \mathrm{V} = \frac{1}{2}m\dot{x}^{2} + \frac{1}{2}kx^{2} \label{smdenergy}
 \end{equation}
 and the derivative of this is
 \begin{displaymath}
- \dot{v} = m\dot{x}\ddot{x}+kx\dot{x}
+ \dot{\mathrm{V}} = m\dot{x}\ddot{x}+kx\dot{x}
 \end{displaymath}
 we can substitute for $m\ddot{x}$ from Equation \ref{smd2} to get
 \begin{equation}
- \dot{v} = -b\dot{x}^{2} \label{smdenergyderiv}
+ \dot{\mathrm{V}} = -b\dot{x}^{2} \label{smdenergyderiv}
 \end{equation}
 Note that by inspection, Equation \ref{smdenergy} is always positive except at $x=0$, and Equation \ref{smdenergyderiv} is always negative except at $\dot{x}=0$. This implies that the energy in the system must always leave the system until it reaches exactly zero, after which it must remain there. Therefore, without every writing down an explicit solution to Equation \ref{smd2} we have proven that it must continuously lose energy until it reaches the origin, which is an attractive stable point.
 
