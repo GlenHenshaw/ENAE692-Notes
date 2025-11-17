@@ -126,12 +126,12 @@ which gives us a joint--space matrix $K_{v}$ which is the equivalent to the Cart
     K_{p} & = \frac{\partial \tau}{\partial\underline{\theta}} = \frac{\partial ( J^{T}(\underline{\theta})K_{px}\tilde{x})}{\partial\underline{\theta}}\\ & = J^{T}(\underline{\theta})K_{px}J(\underline{\theta}) + \frac{\partial J^{T}(\underline{\theta})K_{px}}{\partial \underline{\theta}^{T}}\tilde{\underline{x}} \label{stiffness}
 \end{split}
 \end{equation}
-Note that the first term of Equation \ref{stiffness} is what we derived for the Salisbury stiffness controller. The second term accounts for the change of the Jacobian as the joints move. For small deviations, e.g. for systems that display high levels of stiffness, this is probably small and can be ignored. But if we want a system that displays low levels of stiffness, there is no guarantee that the joint motions will be small. Ignoring that second term will lead to ``errors'' in the mapping from Cartesian to joint stiffness, meaning that the system will not continue to display the desired Cartesian stiffness.
+Note that the first term of Equation \ref{stiffness} is what we derived for the Salisbury stiffness controller. The second term accounts for the change of the Jacobian as the joints move; I suspect, but I have not actually investigated this, that if you are recalculating the Jacobian every time you execute your compliance control loop, this term is unnecessary.
 
 The purists among you may note that technically we should have \textit{also} taken the partial of $K_{vx}$ with respect to $\underline{\theta}$, which would have added a third term, e.g.
 \begin{equation}
  \begin{split}
-    K_{p} & = \frac{\partial \tau}{\partial\underline{\theta}} = \frac{\partial ( J^{T}(\underline{\theta})K_{px}\tilde{\theta} + J^{T}(\underline{\theta})K_{vx}\dot{\tilde{\theta}})}{\partial\underline{\theta}}\\ & = J^{T}(\underline{\theta})K_{px}J(\underline{\theta}) + \frac{\partial J^{T}(\underline{\theta})}{\partial \underline{\theta}^{T})}K_{px}\tilde{\underline{x}} + \frac{\partial J^{T}(\underline{\theta})}{\partial\underline{\theta}}K_{vx}\dot{\underline{x}}
+    K_{p} & = \frac{\partial \tau}{\partial\underline{\theta}} = \frac{\partial ( J^{T}(\underline{\theta})K_{px}\tilde{\theta} + J^{T}(\underline{\theta})K_{vx}\dot{\tilde{\theta}})}{\partial\underline{\theta}}\\ & = J^{T}(\underline{\theta})K_{px}J(\underline{\theta}) + \frac{\partial J^{T}(\underline{\theta})}{\partial \underline{\theta}^{T}}K_{px}\tilde{\underline{x}} + \frac{\partial J^{T}(\underline{\theta})}{\partial\underline{\theta}}K_{vx}\dot{\underline{x}}
  \end{split}
 \end{equation}
 which would actually add a term to the equivalent damping, e.g.
@@ -173,7 +173,7 @@ and there are indeed people who do it this way. Of course, this just adds even m
 
 Here is a block diagram of what this implementation looks like:
 \begin{figure}[h!]
- \centering
+\centering
 \begin{tikzpicture}
  % Sum shape
  \node[circle,draw, minimum width=0.5cm] (sum) at (-1,0){$\Sigma$} ;
@@ -191,12 +191,18 @@ Here is a block diagram of what this implementation looks like:
         right=0.5cm of Jinv
         ] (sum2) {$\Sigma$};
 
+\node[draw,
+	minimum width=0.25,
+	minimum height=1cm,
+	right=0.5cm of sum2
+	] (M) {$M$};
+	
 \node[circle, draw,
     minimum width=0.5,
-    right=0.5cm of sum2
+    right=0.5cm of M
     ] (sum3) {$\Sigma$};
     
- 
+
 % System H(s)
 \node [draw,
     minimum width=1.5cm, 
@@ -207,14 +213,36 @@ Here is a block diagram of what this implementation looks like:
 \node [draw,
     minimum width=0.75cm,
     minimum height=1cm,
-    right=0.5cm of robot
+    right=0.75cm of robot
     ] (J) {$J$};
     
 \node [draw,
-    minimum width=2cm, 
+    minimum width=1cm, 
     minimum height=1cm,
-    below=1cm of sum3
+    below=1cm of robot
 ] (model) {$\underline{C}+\underline{E}$};
+
+\node [draw,
+	minimum width=0.5cm,
+	minimum height=0.5cm,
+	below=1cm of sum2
+] (Kp) {$K_{p}$};
+
+\node [draw,
+	minimum width=0.5cm,
+	minimum height=0.5cm,
+	right=0.25cm of Kp
+] (Kd) {$K_{d}$};
+
+\node[circle, draw,
+    minimum width=0.5,
+    below=0.5cm of Kd
+    ] (sum4) {$\Sigma$};
+
+\node[circle, draw,
+    minimum width=0.5,
+    below=1cm of Kp
+    ] (sum5) {$\Sigma$};
 
 
 %\draw[-stealth] (sum3.east) -- (JT.west)
@@ -225,10 +253,11 @@ Here is a block diagram of what this implementation looks like:
 \draw[-stealth] (Zd.east) -- (Jinv.west) node[midway,above](x){$\underline{F}_{d}$};
 \draw[-stealth] (Jinv.east) -- (sum2.west) node[midway,above](x){$\underline{\tau}_{d}$};
 
-\draw[-stealth] (sum2.east) -- (sum3.west) node[midway,above](x){$\underline{\tau}_{c}$};
-\draw[-stealth] (sum3.east) -- (robot.west) node[midway,above](x){$\underline{\tau}$};
+\draw[-stealth] (sum2.east) -- (M.west) node[midway,above](x){$\underline{\tau}_{c}$};
+\draw[-stealth] (M.east) -- (sum3.west) node[midway,above](x){$\underline{\tau}$};
+\draw[-stealth] (sum3.east) -- (robot.west) node[midway,above](x){};
 
-\draw[-stealth] (robot.east) -- (J.west) node[midway,above](x){$\underline{\dot{\theta}}$};
+\draw[-stealth] (robot.east) -- (J.west) node[midway](theta){} node[midway,above](theta2){$\underline{\theta}, \underline{\dot{\theta}}$};
 
 \draw[-stealth] (J.east) -- ++ (1.25,0) 
     node[midway](output){}node[midway,above]{$\underline{\dot{x}}$};
@@ -236,17 +265,37 @@ Here is a block diagram of what this implementation looks like:
 \ExtractCoordinate{sum.west}
 \draw[-stealth] (\XCoord-10, \YCoord) -- (\XCoord, \YCoord) node[midway,above]{$\underline{\dot{x}}_{d}$};
 \ExtractCoordinate{sum.south}
+%(\XCoord, \YCoord-19) node[pos=0.15,above]{$\underline{x}$} -- 
+%X feedback line
+\draw[-stealth] (output.center) -- ++ (0,-4.5) -- (\XCoord, -4.5) -- (sum.south) node[below,left]{$-$};
 
-\draw[-stealth] (output.center) -- ++ (0,-1) -- (\XCoord, \YCoord-19) node[pos=0.15,above]{$\underline{x}$} -- (sum.south) node[below,left]{$-$};
+% theta feedback line
+\ExtractCoordinate{sum5.south}
+\draw[-stealth] (theta.center) -- ++ (0,-4.0) -- (\XCoord, -4.0) -- (sum5.south) node[below,left]{$-$};
+\ExtractCoordinate{sum4.south}
+\draw[-stealth] (theta.center) -- ++ (0,-3.75) -- (\XCoord, -3.75) -- (sum4.south) node[below,left]{$-$};
+\ExtractCoordinate{model.east}
+\draw[-stealth] (theta.center) -- ++ (0,\YCoord) -- (model.east);
 
-\draw[-stealth] (robot.south) -- ++ (0,-1.35) -- node[pos=0.25,right,below]{$\underline{\theta}, \underline{\dot{\theta}}$} (model.east);
-\ExtractCoordinate{sum2.south}
-\draw[-stealth] (model.west) -- (\XCoord, \YCoord-43) node[pos=0.25,above]{} -- (sum2.south) node[below,left]{$+$};
+\ExtractCoordinate{sum3.south}
+\draw[-stealth] (model.west) -- (\XCoord, \YCoord-47) node[pos=0.25,above]{} -- (sum3.south) node[below,left]{$+$};
 
 \ExtractCoordinate{output.north}
 \draw[<-] (sum3.north) -- ++ (0, 0.5) -- (\XCoord+15, \YCoord+20) node[above] () {$\underline{\tau}_{e}$};
+
+\draw[-stealth] (Kp.north) -- (sum2.south) node[below,left]{$+$};
+\draw[-stealth] (Kd.north) -- (sum2.south) node[below,left]{$+$};
+\draw[-stealth] (Kd.north) -- (sum2.south) node[below,left]{$+$};
+\draw[-stealth] (sum4.north) -- (Kd.south);
+\draw[-stealth] (sum5.north) -- (Kp.south);
+\ExtractCoordinate{sum4.west}
+\draw[-stealth] (-1.5, \YCoord) node[left]{$\underline{\dot{\theta}}_{d}$} -- (sum4.west) node[above]{$+$};
+\ExtractCoordinate{sum5.west}
+\draw[-stealth] (-1.5, \YCoord) node[left]{$\underline{\theta}_{d}$}-- (sum5.west) node[above]{$+$};
 \end{tikzpicture}
 \end{figure}
+
+\pagebreak
 
 where
 \begin{eqnarray}
@@ -257,78 +306,130 @@ where
  Z_{d} & \Leftarrow & \text{Desired impedance, e.g.}\  M_{d}s+B_{d}+K_{d}/s \nonumber
 \end{eqnarray}
 
+
 Note that it is also possible to derive basically this same controller, except directly in Cartesian (operational) space rather than in joint (configuration) space. Here's a block diagram of one version of that controller:
 \begin{figure}[h!]
- \centering
+\centering
 \begin{tikzpicture}
  % Sum shape
  \node[circle,draw, minimum width=0.5cm] (sum) at (-1,0){$\Sigma$} ;
- \node[draw,minimum height=1cm, minimum width=0.75cm, right=0.5cm of sum] (Zd) {$Z_{d}$};
+ \node[draw,minimum height=1cm, minimum width=0.75cm, right=0.25cm of sum] (Zd) {$Z_{d}$};
+ 
+ % Controller
  \node[circle, draw, 
         minimum width=0.5cm,
         right=0.5cm of Zd
         ] (sum2) {$\Sigma$};
 
+\node[draw,
+	minimum width=0.25cm,
+	minimum height=1cm,
+	right=0.5cm of sum2
+	] (M) {$M_{x}$};
+	
 \node[circle, draw,
-    minimum width=0.5,
-    right=0.5cm of sum2
+    minimum width=0.5cm,
+    right=0.5cm of M
     ] (sum3) {$\Sigma$};
     
-% Controller
-\node [draw,
-    minimum width=0.5cm,
+\node[draw,
+    minimum width=1cm,
     minimum height=1cm,
     right=0.5cm of sum3
-]  (JT) {$J^{T}$};
- 
+    ] (Jt) {$J^{T}$};
+
 % System H(s)
 \node [draw,
     minimum width=1.5cm, 
     minimum height=1cm,
-    right=0.5cm of JT
+    right=0.5cm of Jt
 ] (robot) {Robot};
 
 \node [draw,
-    minimum width=0.75cm,
+    minimum width=1.0cm,
     minimum height=1cm,
-    right=0.5cm of robot
+    right=0.75cm of robot
     ] (J) {$J$};
     
 \node [draw,
-    minimum width=2cm, 
+    minimum width=1.75cm, 
     minimum height=1cm,
     below=1cm of robot
 ] (model) {$\underline{C}_{x}+\underline{E}_{x}$};
 
+\node [draw,
+	minimum width=0.5cm,
+	minimum height=0.5cm,
+	below=1cm of sum2
+] (Kp) {$K_{px}$};
 
-\draw[-stealth] (sum3.east) -- (JT.west)
-    node[midway,above]{$\underline{F}_{a}$};
+\node [draw,
+	minimum width=0.5cm,
+	minimum height=0.5cm,
+	right=0.25cm of Kp
+] (Kd) {$K_{dx}$};
+
+\node[circle, draw,
+    minimum width=0.5,
+    below=0.5cm of Kd
+    ] (sum4) {$\Sigma$};
+
+\node[circle, draw,
+    minimum width=0.5,
+    below=1cm of Kp
+    ] (sum5) {$\Sigma$};
+
+
+%\draw[-stealth] (sum3.east) -- (JT.west)
+%    node[midway,above]{$\underline{F}_{a}$};
     
 
 \draw[-stealth] (sum.east) -- (Zd.west) node[midway,above](x){};
-\draw[-stealth] (Zd.east) -- (sum2.west) node[midway,above](x){$\underline{F}_{d}$};
-\draw[-stealth] (sum2.east) -- (sum3.west) node[midway,above](x){$\underline{F}_{c}$};
+\draw[-stealth] (Zd.east) -- (sum2.west) node[midway,above](x){};
 
-\draw[-stealth] (robot.east) -- (J.west) node[midway,above](x){$\underline{\dot{\theta}}$};
+%\draw[-stealth] (Zd.east) -- (Jinv.west) node[midway,above](x){$\underline{F}_{d}$};
+%\draw[-stealth] (Jinv.east) -- (sum2.west) node[midway,above](x){$\underline{\tau}_{d}$};
 
-\draw[-stealth] (JT.east) -- (robot.west) 
-    node[midway,above]{$\tau$};
+\draw[-stealth] (sum2.east) -- (M.west) node[midway,above](x){$\underline{F}_{c}$};
+\draw[-stealth] (M.east) -- (sum3.west) node[midway,above](x){};
+\draw[-stealth] (sum3.east) -- (Jt.west) node[midway,above](x){$F_{a}$};
+\draw[-stealth] (Jt.east) -- (robot.west) node[midway,above](x){$\tau$};
+
+\draw[-stealth] (robot.east) -- (J.west) node[midway](theta){} node[midway,above](theta2){$\underline{\theta}, \underline{\dot{\theta}}$};
 
 \draw[-stealth] (J.east) -- ++ (1.25,0) 
     node[midway](output){}node[midway,above]{$\underline{\dot{x}}$};
 
 \ExtractCoordinate{sum.west}
-\draw[-stealth] (\XCoord-10, \YCoord) -- (\XCoord, \YCoord) node[midway,above]{$\underline{\dot{x}}_{d}$};
+\draw[-stealth] (\XCoord-30, \YCoord) -- (\XCoord, \YCoord) node[midway,above]{$\underline{x}_{d}, \underline{\dot{x}}_{d}$};
 \ExtractCoordinate{sum.south}
+%(\XCoord, \YCoord-19) node[pos=0.15,above]{$\underline{x}$} -- 
+%X feedback line
+\draw[-stealth] (output.center) -- ++ (0,-4.5) -- (\XCoord, -4.5) -- (sum.south) node[below,left]{$-$};
 
-\draw[-stealth] (output.center) -- ++ (0,-1) -- (\XCoord, \YCoord-19) node[pos=0.25,above]{$\underline{x}$} -- (sum.south) node[below,left]{$-$};
+% theta feedback line
+\ExtractCoordinate{sum5.south}
+\draw[-stealth] (output.center) -- ++ (0,-4.0) -- (\XCoord, -4.0) -- (sum5.south) node[below,left]{$-$};
+\ExtractCoordinate{sum4.south}
+\draw[-stealth] (output.center) -- ++ (0,-3.75) -- (\XCoord, -3.75) -- (sum4.south) node[below,left]{$-$};
+\ExtractCoordinate{model.east}
+\draw[-stealth] (output.center) -- ++ (0,\YCoord) -- (model.east);
 
-\draw[-stealth] (output.center) -- ++ (0,-2.02) -- (model.east);
-\ExtractCoordinate{sum2.south}
-\draw[-stealth] (model.west) -- (\XCoord, \YCoord-48) node[pos=0.25,above]{} -- (sum2.south) node[below,left]{$+$};
+\ExtractCoordinate{sum3.south}
+\draw[-stealth] (model.west) -- (\XCoord, \YCoord-47) node[pos=0.25,above]{} -- (sum3.south) node[below,left]{$+$};
 
 \ExtractCoordinate{output.north}
 \draw[<-] (sum3.north) -- ++ (0, 0.5) -- (\XCoord+15, \YCoord+20) node[above] () {$\underline{F}_{e}$};
+
+\draw[-stealth] (Kp.north) -- (sum2.south) node[below,left]{$+$};
+\draw[-stealth] (Kd.north) -- (sum2.south) node[below,left]{$+$};
+\draw[-stealth] (Kd.north) -- (sum2.south) node[below,left]{$+$};
+\draw[-stealth] (sum4.north) -- (Kd.south);
+\draw[-stealth] (sum5.north) -- (Kp.south);
+\ExtractCoordinate{sum4.west}
+\draw[-stealth] (-1.0, \YCoord) node[left]{$\underline{\dot{x}}_{d}$} -- (sum4.west) node[above]{$+$};
+\ExtractCoordinate{sum5.west}
+\draw[-stealth] (-1.0, \YCoord) node[left]{$\underline{x}_{d}$}-- (sum5.west) node[above]{$+$};
 \end{tikzpicture}
 \end{figure}
 
