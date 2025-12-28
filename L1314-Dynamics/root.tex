@@ -64,8 +64,8 @@ The advantage of the Newton--Euler approach is that it is inherently recurrent -
 		\draw[->][line width=0.5mm] (0,0) -- (1,0);
 		\draw[->][line width=0.5mm] (0,0) -- (0,1) node[above]{$\{i\}$};
 		\draw[->][line width=0.25mm] (0,0) -- (0.707, 0.707);
-		\draw[->][line width=0.5mm] (-1, -0.25) node[above]{$n_{i}$} -- (0,0);
-		\draw[->][line width=0.5mm] (-1, -1) node[above]{$f_{i}$} -- (0,0);
+		\draw[->][line width=0.5mm] (-1, -0.25) node[above]{$\underline{n}_{i}$} -- (0,0);
+		\draw[->][line width=0.5mm] (-1, -1) node[above]{$\underline{f}_{i}$} -- (0,0);
 		\begin{scope}[shift={(4,1)}]
 			\coordinate (A) at (0,0);
 			\coordinate(B) at (3,1);
@@ -74,8 +74,8 @@ The advantage of the Newton--Euler approach is that it is inherently recurrent -
 			\draw[->][rotate=-15][line width=0.5mm] (0,0) -- (1,0);
 			\draw[->][rotate=-15][line width=0.5mm] (0,0) -- (0,1) node[above]{$\{i+1\}$};
 			\draw[->][rotate=-15][line width=0.25mm] (0,0) -- (0.707, 0.707);
-			\draw[->][rotate=-15][line width=0.5mm] (0,0) -- (0.8,1.5) node[above]{$n_{i+1}$};
-			\draw[->][rotate=-15][line width=0.5mm] (0,0) -- (1.5, -0.5) node[below]{$f_{i+1}$};
+			\draw[->][rotate=-15][line width=0.5mm] (0,0) -- (0.8,1.5) node[above]{$\underline{n}_{i+1}$};
+			\draw[->][rotate=-15][line width=0.5mm] (0,0) -- (1.5, -0.5) node[below]{$\underline{f}_{i+1}$};
 		\end{scope}	
 		\begin{scope}[shift={(3.6,-0.5)}]
 			\coordinate (A) at (0,0);
@@ -132,11 +132,11 @@ e.g. they are symmetric matrices with non--zeros on the diagonal. The terms on t
 
 Also unlike mass, inertia tensors are expressed with respect to a specific reference frame that we must specify. We can re--express an inertia tensor with respect to a translated (but not rotated) frame via the parallel axis theorem:
 \begin{displaymath}
-	^{A}I = \ ^{C}I + m\left[\ ^{A}p^{T}_{c}\ ^{A}p_{c}I_{3\times3} - \ ^{A}p_{c}\ ^{A}p_{c}^{T}\right]
+	^{A}I = \ ^{C}I + m\left[\ ^{A}\underline{p}^{T}_{c}\ ^{A}\underline{p}_{c}I_{3\times3} - \ ^{A}\underline{p}_{c}\ ^{A}\underline{p}_{c}^{T}\right]
 \end{displaymath}
 where $^{A}p_{c} = \left[x_{c}, y_{c}, z_{c}\right]^{T}$ locates the center of mass relative to frame $A$, and $I_{3\times3}$ is the 3x3 identity matrix (see Example 6.2).
 
-To compute the forward dynamics, we need to transform what we know about the dynamic state of the manipulator $\{ \underline{F}, \underline{N}, \underline{\omega}, \underline{v} \}$ into $\{\underline{\tau}, \underline{\dot{q}}\}$. Our approach will be to start at the base frame and iterate outwards to the tooltip, calculating the linear and angular accelerations of each joint as a function of the linear and angular accelerations of all of the preceding joints. We'll then iterate back from tooltip to base frame, calculating the joint torques (and forces, for linear joints). In order to do this, we need tnools for expressing accelerations and rotational rates in different frames.
+To compute the forward dynamics, we need to transform what we know about the dynamic state of the manipulator $\{ \underline{F}, \underline{N}, \underline{\omega}, \underline{v} \}$ into $\{\underline{\tau}, \underline{\dot{q}}\}$. Our approach will be to start at the base frame and iterate outwards to the tooltip, calculating the linear and angular accelerations of each joint as a function of the linear and angular accelerations of all of the preceding joints. We'll then iterate back from tooltip to base frame, calculating the joint torques (and forces, for linear joints). In order to do this, we need tools for expressing accelerations and rotational rates in different frames.
 
 We'll start with acceleration. Equation 5.13 from Chapter 5 of the text gives us a way to express linear \emph{velocities} in different frames:
 \begin{displaymath}
@@ -145,8 +145,8 @@ We'll start with acceleration. Equation 5.13 from Chapter 5 of the text gives us
 where $^{A}\underline{\mathrm{v}}_{B_{O}}$ is the velocity of the origin of frame $B$ with respect to frame $A$. Because linear accelerations are just the time derivatives of velocities, we can differentiate both sides of this equation to get what we need:
  \begin{eqnarray}
  	\frac{d}{dt}\left\{ \ ^{A}\underline{\mathrm{v}}_{p}  \right\} & = &\left\{ \ ^{A}_{B}R \ ^{B}\underline{\mathrm{v}}_{p} + \ ^{A}\underline{\Omega}_{B} \times \ ^{A}_{B}R\ ^{B}\underline{p}_{p} + \ ^{A}\underline{\mathrm{v}}_{B_{O}} \right\} \nonumber \\
-	^{A}\underline{\dot{\mathrm{v}}}_{p} & = & \ ^{A}_{B}R\ ^{B}\underline{\dot{\mathrm{v}}}_{p} + \ ^{A}_{B}\dot{R}\ ^{B}\underline{\mathrm{v}}_{p} + \ ^{A}\underline{\dot{\Omega}}_{B}\times\ ^{A}_{B}R\ ^{B}\underline{p}_{p}+ \ ^{A}\underline{\Omega}_{B}\times \underbrace{\frac{d}{dt}\left(\ ^{A}_{B}R\ ^{B}\underline{p}_{p}\right)}_{=\ ^{A}_{B}\dot{R}\ ^{B}\underline{p}_{p} + \ ^{A}_{B}R\underline{\mathrm{v}}_{p} \times \ ^{B}\dot{\underline{p}}_{p}} + \ ^{A}\underline{\dot{\mathrm{v}}}_{B_{O}} \nonumber \\
-	&=& \ ^{A}_{B}R\ ^{B}\underline{\dot{\mathrm{v}}}_{p} + \ ^{A}\underline{\Omega}_{B} \times\ ^{A}_{B}R\ ^{B}\underline{\mathrm{v}}_{p} + \ ^{A}\underline{\dot{\Omega}}_{B}\times\ ^{A}_{B}R\ ^{B}\underline{p}_{p} \nonumber \\ && + \ ^{A}\underline{\Omega}_{B}\times(\ ^{A}\underline{\Omega}_{B}\times\!\! ^{A}_{B}R\ ^{B}\underline{p}_{p})  + \ ^{A}\underline{\Omega_{B}}\times\ ^{A}_{B}R\ ^{B}\underline{\mathrm{v}}_{p} + \ ^{A}\underline{\dot{\mathrm{v}}}_{B_{0}} \nonumber
+	^{A}\underline{\dot{\mathrm{v}}}_{p} & = & \ ^{A}_{B}R\ ^{B}\underline{\dot{\mathrm{v}}}_{p} + \ ^{A}_{B}\dot{R}\ ^{B}\underline{\mathrm{v}}_{p} + \ ^{A}\underline{\dot{\Omega}}_{B}\times\ ^{A}_{B}R\ ^{B}\underline{p}_{p}+ \ ^{A}\underline{\Omega}_{B}\times \underbrace{\frac{d}{dt}\left(\ ^{A}_{B}R\ ^{B}\underline{p}_{p}\right)}_{=\ ^{A}_{B}\dot{R}\ ^{B}\underline{p}_{p} + \ ^{A}_{B}R\underline{v}_{p} \times \ ^{B}\dot{\underline{p}}_{p}} + \ ^{A}\underline{\dot{\mathrm{v}}}_{B_{O}} \nonumber \\
+	&=& \ ^{A}_{B}R\ ^{B}\underline{\dot{\mathrm{v}}}_{p} + \ ^{A}\underline{\Omega}_{B} \times\ ^{A}_{B}R\ ^{B}\underline{\mathrm{v}}_{p} + \ ^{A}\underline{\dot{\Omega}}_{B}\times\ ^{A}_{B}R\ ^{B}\underline{p}_{p} \nonumber \\ && + \ ^{A}\underline{\Omega}_{B}\times(\ ^{A}\underline{\Omega}_{B}\times\!\! ^{A}_{B}R\ ^{B}\underline{p}_{p})  + \ ^{A}\underline{\Omega}_{B}\times\ ^{A}_{B}R\ ^{B}\underline{\mathrm{v}}_{p} + \ ^{A}\underline{\dot{\mathrm{v}}}_{B_{0}} \nonumber
 \end{eqnarray}
 where we have replaced $^{B}\underline{\dot{p}}_{p}$ by $^{B}\underline{\mathrm{v}}_{p}$. Simplifying, we end up with
 \begin{displaymath}
@@ -155,11 +155,11 @@ where we have replaced $^{B}\underline{\dot{p}}_{p}$ by $^{B}\underline{\mathrm{
 
 We can do something similar with rotational acceleration. The text provides an equation to express rotational velocity in different frames (Equation 6.13):
 \begin{displaymath}
- ^{A}\underline{\Omega}_{C} = \ ^{A}\Omega_{B} + \ ^{A}_{B}R\ ^{B}\Omega_{C}
+ ^{A}\underline{\Omega}_{C} = \ ^{A}\underline{\Omega}_{B} + \ ^{A}_{B}R\ ^{B}\underline{\Omega}_{C}
 \end{displaymath}
 Differentiating both sides, we get
 \begin{eqnarray}
-	\frac{d}{dt} \left(\ ^{A}\underline{\Omega}_{C} \right) & = & \frac{d}{dt} \left(\ ^{A}\Omega_{B} + \ ^{A}_{B}R\ ^{B}\Omega_{C} \right) \nonumber \\
+	\frac{d}{dt} \left(\ ^{A}\underline{\Omega}_{C} \right) & = & \frac{d}{dt} \left(\ ^{A}\underline{\Omega}_{B} + \ ^{A}_{B}R\ ^{B}\underline{\Omega}_{C} \right) \nonumber \\
 	^{A}\underline{\dot{\Omega}}_{C} & = & \ ^{A}\underline{\dot{\Omega}}_{B} + \ ^{A}_{B}\dot{R}\ ^{B}\underline{\Omega}_{C} + \ ^{A}_{B}R\ ^{B}\underline{\dot{\Omega}}_{C} \nonumber \\
 	^{A}\underline{\dot{\Omega}}_{C} & = &\ ^{A}\underline{\dot{\Omega}}_{B} + \ ^{A}_{B}R\ ^{B}\underline{\dot{\Omega}}_{C} + \ ^{A}\underline{\Omega}_{B}\times\ ^{A}_{B}R\ ^{B}\underline{\Omega}_{C} \nonumber
 \end{eqnarray}
@@ -177,7 +177,7 @@ Then,
 ^{i+1}\underline{\dot{v}}_{i+1} & = & \ ^{i+1}_{i}R\left[\ ^{i}\underline{\dot{\omega}}_{i}\times\ ^{i}\underline{p}_{i+1} +\ ^{i}\underline{\omega}_{i}\times\left(\ ^{i}\underline{\omega}_{i}\times\ ^{i}\underline{p}_{i+1}\right)+\ ^{i}\underline{\dot{v}}_{i}\right] \nonumber \\
 && + 2\ ^{i+1}\underline{\omega}_{i+1}\times\dot{d}_{i+1}\ ^{i+1}\hat{z}_{i+1} + \ddot{d}_{i+1}\ ^{i+1}\hat{z}_{i+1}
 \end{eqnarray}
-Note that we have used the substitutions $^{i}\underline{\omega}_{i} = \ ^{i}_{0}R\ ^{0}\underline{\Omega}_{i}$ and $^{i}\underline{\dot{v}}_{i} = \ ^{i}_{0}R\ ^{0}\underline{\mathrm{v}}_{i}$.
+Note that we have used the substitutions $^{i}\underline{\omega}_{i} = \ ^{i}_{0}R\ ^{0}\underline{\Omega}_{i}$ and $^{i}\underline{\dot{v}}_{i} = \ ^{i}_{0}R\ ^{0}\underline{\dot{\mathrm{v}}}_{i}$.
 
 Next, an expression for the linear acceleration of the link Center of Mass, using the substitutions
 \begin{eqnarray}
@@ -188,7 +188,7 @@ Next, an expression for the linear acceleration of the link Center of Mass, usin
 	p & \rightarrow & c_{i} \nonumber
 \end{eqnarray}
 \begin{eqnarray}
-^{i}_{0}R\left\{\ ^{0}\underline{\dot{v}}_{c_{i}} \right. & = & \left. \ ^{0}_{i}R\ ^{i}\underline{\dot{\mathrm{v}}}_{c_{i}} + \ ^{0}\underline{\dot{\Omega}}_{i}\times\ ^{0}_{i}R\ ^{i}\underline{p}_{c_{i}}+\ ^{o}\underline{\dot{\mathrm{v}}}_{i} + 2\ ^{0}\underline{\Omega}_{i}\times\ ^{0}_{i}R\ ^{i}\underline{\mathrm{v}}_{c_{i}} + \ ^{0}\underline{\Omega}_{i}\times (\ ^{0}\underline{\Omega}_{i}\times\ ^{0}_{i}R\  ^{i}\underline{p}_{c_{i}}) \right\} \nonumber
+^{i}_{0}R\left\{\ ^{0}\underline{\dot{\mathrm{v}}}_{c_{i}} \right. & = & \left. \ ^{0}_{i}R\ ^{i}\underline{\dot{\mathrm{v}}}_{c_{i}} + \ ^{0}\underline{\dot{\Omega}}_{i}\times\ ^{0}_{i}R\ ^{i}\underline{p}_{c_{i}}+\ ^{o}\underline{\dot{\mathrm{v}}}_{i} + 2\ ^{0}\underline{\Omega}_{i}\times\ ^{0}_{i}R\ ^{i}\underline{\mathrm{v}}_{c_{i}} + \ ^{0}\underline{\Omega}_{i}\times (\ ^{0}\underline{\Omega}_{i}\times\ ^{0}_{i}R\  ^{i}\underline{p}_{c_{i}}) \right\} \nonumber
 \end{eqnarray}
 Noting that the center of mass does not move in its own frame, $^{i}\underline{\mathrm{v}}_{c_{i}} = \ ^{i}\underline{\dot{\mathrm{v}}}_{c_{i}} = \underline{0}$, 
 \begin{eqnarray}
@@ -204,7 +204,7 @@ Now we'll look at the angular acceleration of link frames, by making the substit
 \begin{eqnarray}
 ^{i}_{0}R\left\{\ ^{0}\underline{\dot{\Omega}}_{i+1}\right\} & = & ^{i}_{0}R\left\{\ ^{0}\underline{\dot{\Omega}}_{i}+\ ^{0}_{i}R\ ^{i}\underline{\dot{\Omega}}_{i+1}+\ ^{0}\underline{\Omega}_{i}\times\ ^{0}_{i}R\ ^{i}\underline{\Omega}_{i+1}\right\} \nonumber
 \end{eqnarray}
-Multiplying both sides by $^{i}_{0}R$, noting that $^{i}\underline{\Omega}_{i+1} = \ ^{i}_{i+1}R\ ^{i+1}\hat{z}_{i+1}\dot{\Theta}_{i+1}$, expanding $^{i}\dot{\underline{\Omega}}_{i+1}$, and recalling that $^{i}_{i+1}\dot{R} = ^{i}\underline{\Omega}_{i+1}\ ^{i}_{i+1}R$ gives
+Multiplying both sides by $^{i}_{0}R$, noting that $^{i}\underline{\Omega}_{i+1} = \ ^{i}_{i+1}R\ ^{i+1}\hat{z}_{i+1}\dot{\Theta}_{i+1}$, expanding $^{i}\dot{\underline{\Omega}}_{i+1}$, and recalling that $^{i}_{i+1}\dot{R} = ^{i}\underline{\Omega}_{i+1}\times \ ^{i}_{i+1}R$ gives
 \begin{eqnarray}
 ^{i+1}_{i}R\left\{\ ^{i}\underline{\dot{\omega}}_{i+1}\right\} & = & \ ^{i+1}_{i}R\left\{\ ^{i}\underline{\dot{\omega}}_{i} + \ ^{i}_{i+1}R\ ^{i+1}\hat{z}_{i+1}\ddot{\theta}_{i+1} + \ ^{i}\underline{\Omega}_{i+1}\!\times\ \!^{i}_{i+1}R\ ^{i+1}\hat{z}_{i+1}\dot{\theta}_{i+1} \right. \nonumber \\
 && + \left. \ ^{i}\underline{\omega}_{i}\times\ ^{i}_{i+1}R\ ^{i+1}\hat{z}_{i+1}\dot{\theta}_{i+1}\right\} \nonumber
@@ -273,7 +273,7 @@ K & = &\sum_{i=1}^{N}\left( \underbrace{\frac{1}{2}m_{i}\ ^{i}\underline{v}_{c_{
 Note that we can calculate $^{i}\underline{v}_{c_{i}}$ by substituting $\{A\} \rightarrow \{0\}, \{B\} \rightarrow \{i\}$ and $P\rightarrow c_{i}$ into Equation 5.13:
 \begin{eqnarray}
 ^{0}\underline{\mathrm{v}}_{c_{i}} & = & ^{0}\underline{\Omega}_{i}\times\ ^{0}_{i}R\ ^{i}\underline{p}_{c_{i}} + \ ^{0}\underline{\mathrm{v}}_{i} \nonumber \\
-^{i}_{0}R\left\{ \underline{v}_{c_{i}} \right. & = & \left. \underline{\omega}_{i}\times\ ^{0}_{i}R\ ^{i}\underline{p}_{0}+\underline{v}_{i} \right\} \nonumber \\
+^{i}_{0}R\left\{ \underline{v}_{c_{i}} \right. & = & \left. \underline{\omega}_{i}\times\ ^{0}_{i}R\ ^{0}\underline{p}_{c_{i}}+\underline{v}_{i} \right\} \nonumber \\
 ^{i}\underline{v}_{c_{i}} & = & \ ^{i}\underline{\omega}_{i} \times\ ^{i}\underline{p}_{c_{i}} + \ ^{i}\underline{v}_{i} \nonumber \\
 ^{i+1}\underline{v}_{i+1} & = & \ ^{i+1}R_{i}\left(\ ^{i}\underline{v}_{i} + \ ^{i}\underline{\omega}_{i}\times\ ^{i}\underline{p}_{i+1}\right) + \underline{\dot{d}}_{i+1}\ ^{i+1}\hat{z}_{i+1} \nonumber
 \end{eqnarray}
@@ -289,29 +289,29 @@ which nearly always refers only to gravitational terms. Note that $^{0}\underlin
 
 To find the dynamics, we have to shove these equations through Equation \ref{Lagrangian_deriv}:
 \begin{eqnarray}
-	\frac{d}{dt}\frac{\partial L}{\partial \underline{\dot{q}}} & = & \frac{d}{dt} \left( M(\underline{q}) \underline{\dot{q}} \right)  \nonumber \\
+	\frac{d}{dt}\left(\frac{\partial L}{\partial \underline{\dot{q}}}\right) & = & \frac{d}{dt} \left( M(\underline{q}) \underline{\dot{q}} \right)  \nonumber \\
 	& = & M(\underline{q})\underline{\ddot{q}} + \dot{M}(\underline{q}) \dot{\underline{q}} \nonumber
 \end{eqnarray}
 so that
 \begin{equation}
 	\underline{\tau} = M(\underline{q})\underline{\ddot{q}} + \dot{M}(\underline{q})\underline{\dot{q}} - \frac{\partial L}{\partial \underline{q}}
 \end{equation}
-where $\underline{\tau}_{i}$ are the generalized forces for a manipulator.
+where $\underline{\tau}$ are the generalized forces for a manipulator.
 We define the term
 \begin{displaymath}
-b(\underline{q}, \underline{\dot{q}}) = \dot{M}(\underline{q})\dot{\underline{q}} - \frac{\partial L}{\partial \underline{q}}
+b(\underline{q}, \underline{\dot{q}}) = \dot{M}(\underline{q})\dot{\underline{q}} - \frac{\partial K}{\partial \underline{q}}
 \end{displaymath}
 which contains the centripetal and Coriolis forces. Thus, the dynamics of a manipulator can be expressed in full as 
 \begin{equation}
 	\underline{\tau} = M(\underline{q})\underline{\ddot{q}} + b(\underline{q}, \underline{\dot{q}}) + E(\underline{q})
 \end{equation}
-where $E(\underline{q}) = \frac{\partial P}{\partial\underline{q}}$ (note that $\frac{\partial K}{\partial\underline{q}}=\underline{0}$).
+where $E(\underline{q}) = \frac{\partial P}{\partial\underline{q}}$.
 
 This is known as a ``Hamiltonian system'', and is quite general. $E(\cdot)$ is usually just gravitational forces, but can also include frictional terms or other terms exerted on the manipulator by the environment.
 
 In fact, we can generally further factor the equations of motion as
 \begin{equation}
-	\underline{\tau} = M(\underline{q})\underline{\ddot{q}} + B(\underline{q})\underline{\dot{q}} + C(\underline{q})\underline{\dot{q}}^{2} + E(\underline{q})
+	\underline{\tau} = M(\underline{q})\underline{\ddot{q}} + B(\underline{q})\left[\underline{\dot{q}}\ \underline{\dot{q}}\right] + C(\underline{q})\left[\underline{\dot{q}}^{2}\right] + E(\underline{q})
 \end{equation}
 where $B(\cdot)$ contains just the Coriolis forces, and $C(\cdot)$ contains the centripetal forces.
 
@@ -357,13 +357,13 @@ From Section 6.8, we know that the full dynamics of this arm are
 \end{eqnarray}
 We can rewrite this is configuration space form as:
 \begin{equation}
-\underline{\tau} = M(\underline{q})\ddot{q} + B(\underline{q})\left[\begin{array}{cc}\dot{\theta}_{1} & \dot{\theta}_{2}\end{array}\right] + C(\underline{q})\left[\begin{array}{c} \dot{\theta}_{1}^{2} \\ \dot{\theta}_{2}^{2} \end{array}\right] +G(\underline{q}) \nonumber
+\underline{\tau} = M(\underline{q})\ddot{q} + B(\underline{q})\left[\dot{\theta}_{1}\ \dot{\theta}_{2}\right] + C(\underline{q})\left[\begin{array}{c} \dot{\theta}_{1}^{2} \\ \dot{\theta}_{2}^{2} \end{array}\right] +G(\underline{q}) \nonumber
 \end{equation}
 where
 \begin{displaymath}
 M(\underline{q}) = \left[\begin{array}{ll} l_{2}^{2}m_{2}+2l_{1}l_{2}m_{2}c_{2}+l_{1}^{2}(m_{1}+m_{2}) & l_{2}^{2}m_{2}+l_{1}l_{2}m_{2}c_{2} \\ l_{2}^{2}m_{2}+l_{1}l_{1}m_{2}c_{2} & l_{2}^{2}m_{2} \end{array} \right]
 \end{displaymath}
-Note that $M=M^{T}$ and that $1/2\underline{\dot{q}}^{T}M\underline{\dot{q}}>0$. This implies that $M^{-1}$ always exists.
+Note that $M=M^{T}$ and that $K=1/2\underline{\dot{q}}^{T}M\underline{\dot{q}}>0$. This implies that $M^{-1}$ always exists.
 
 The Coriolis term is
 \begin{displaymath}
