@@ -341,6 +341,7 @@ For the Ranger arm,
 	\omega_{r} & = & \sqrt{\frac{K_{t}}{J_{\text{eff}}}} \nonumber \\
 	J_{\text{eff}} & = & J_{\text{link}}+\eta^{2}J_{m} = 19.39+0.5 \nonumber \\
 	\omega_{r} & = & 52.8\ \text{rad/sec} \nonumber \\
+	K_{T} & = & 54,000 \text{N-m/rad} \nonumber \\
 	\rightarrow f_{r} & = & 8.3\ \text{Hz} \nonumber
 \end{eqnarray}
 
@@ -384,7 +385,7 @@ Here's a spring--mass--damper system:
 \noindent
 and we are asked to find a decoupled joint controller such that $\zeta=1$, $K_{\text{tot}}=\text{MAX}$, and the controller does not excite any unmodelled dynamics (e.g. flexible modes).
  \noindent
-So the dynamics are
+So the dynamics for a spring equilibrium position of $x = 0$ are
 \begin{displaymath}
 	\ddot{x} + \dot{x} + x = F
 \end{displaymath}
